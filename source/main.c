@@ -1,6 +1,9 @@
 /*
-	Hello World example made by Aurelio Mannara for libctru
-	This code was modified for the last time on: 12/12/2014 21:00 UTC+1
+Filename: main.c
+Author:   AllAcacia
+
+Hello World example made by Aurelio Mannara for libctru
+This code was modified for the last time on: 12/12/2014 21:00 UTC+1
 */
 
 #include <3ds.h>

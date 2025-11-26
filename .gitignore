@@ -39,3 +39,11 @@
 
 # debug information files
 *.dwo
+
+# other
+*.json
+*.lst
+*.elf
+*.3dsx
+*.smdh
+*.map

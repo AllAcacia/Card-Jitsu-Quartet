@@ -1,4 +1,6 @@
 # Card-Jitsu-Quartet
+
+## About
 Master the three elements within Card-Jitsu!
 
 ## How to Compile

@@ -41,9 +41,9 @@ GFXBUILD	:=	$(BUILD)
 #ROMFS		:=	romfs
 #GFXBUILD	:=	$(ROMFS)/gfx
 
-APP_TITLE       := Card-Jitsu-Quartet
+APP_TITLE := Card-Jitsu-Quartet
 APP_DESCRIPTION := Master the three elements within Card-Jitsu!
-APP_AUTHOR      := AllAcacia
+APP_AUTHOR := AllAcacia
 
 #---------------------------------------------------------------------------------
 # options for code generation

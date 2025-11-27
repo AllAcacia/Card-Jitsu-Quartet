@@ -1,5 +1,5 @@
 /*
-Filename: main.c
+Filename: game.c
 Author:   AllAcacia
 
 Hello World example made by Aurelio Mannara for libctru
@@ -98,7 +98,9 @@ void print_control_data(u64 time_s, touchPosition* tpad, circlePosition* cpad, a
 	printf("\x1b[22;0HY = Card-Jitsu Water");
 	printf("\x1b[23;0HX = Card-Jitsu Snow");
 
-	printf("\x1b[28;0HDeveloped by AllAcacia");
+	printf("\x1b[26;0HCard-Jitsu Quartet");
+	printf("\x1b[27;0HMaster the three elements within Card-Jitsu!");
+	printf("\x1b[29;0HDeveloped by AllAcacia");
 	printf("\x1b[30;0Hhttps://github.com/AllAcacia/Card-Jitsu-Quartet/");
 }
 
@@ -136,7 +138,8 @@ int main(int argc, char **argv)
 	gfxInitDefault();
 	hidInit();
 
-	// Initialize console on top screen. Using NULL as the second argument tells the console library to use the internal console structure as current one
+	// Initialize console on top screen.
+	// Using NULL as the second argument tells the console library to use the internal console structure as current one
 	consoleInit(GFX_TOP, NULL);
 	consoleClear();
 	
@@ -146,13 +149,13 @@ int main(int argc, char **argv)
 
 	tick_refresh_delay = getTickDelay(REFRESH_RATE);
 
-	circlePosition* vcpad = malloc(sizeof(circlePosition));   // circle pad vector
-	circlePosition* vcstick = malloc(sizeof(circlePosition)); // c-stick vector
+	circlePosition* vcpad = malloc(sizeof(circlePosition));   // Circle-Pad vector
+	circlePosition* vcstick = malloc(sizeof(circlePosition)); // C-Stick vector
 
-	accelVector* vaccl = malloc(sizeof(accelVector));          // accelerometer vector
-	angularRate* vgyro = malloc(sizeof(angularRate));          // gyroscope vector
-	touchPosition* vtpad = malloc(sizeof(touchPosition));      // touchpad vector
-	touchPosition* vtpad_prev = malloc(sizeof(touchPosition)); // touchpad vector (from previous iteration)
+	accelVector* vaccl = malloc(sizeof(accelVector));          // Accelerometer vector
+	angularRate* vgyro = malloc(sizeof(angularRate));          // Gyroscope vector
+	touchPosition* vtpad = malloc(sizeof(touchPosition));      // Touchpad vector
+	touchPosition* vtpad_prev = malloc(sizeof(touchPosition)); // Touchpad vector (from previous iteration)
 
 	// Main loop
 	while (aptMainLoop())

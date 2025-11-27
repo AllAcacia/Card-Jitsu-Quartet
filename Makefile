@@ -37,9 +37,9 @@ SOURCES		:=	source
 DATA		:=	data
 INCLUDES	:=	include
 GRAPHICS	:=	gfx
-GFXBUILD	:=	$(BUILD)
-#ROMFS		:=	romfs
-#GFXBUILD	:=	$(ROMFS)/gfx
+# GFXBUILD	:=	$(BUILD)
+ROMFS		:=	romfs
+GFXBUILD	:=	$(ROMFS)/gfx
 
 APP_TITLE := Card-Jitsu-Quartet
 APP_DESCRIPTION := Master the three elements within Card-Jitsu!

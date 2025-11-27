@@ -13,9 +13,6 @@ Author:   AllAcacia
 #define PYRO_SELECT KEY_B
 #define HYDRO_SELECT KEY_Y
 #define CRYO_SELECT KEY_X
-#define MAX_SPRITES   768
-#define SCREEN_WIDTH  400
-#define SCREEN_HEIGHT 240
 
 
 typedef enum {

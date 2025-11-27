@@ -1,3 +1,8 @@
+/*
+Filename: game.h
+Author:   AllAcacia
+*/
+
 #ifndef GAME_H
 #define GAME_H
 
@@ -17,6 +22,21 @@ typedef enum {
 	HYDRO,  // CJ Water
 	CRYO    // CJ Snow
 } CJQ_Gamestate;
+
+
+void getBinaryRep(int num, int len, char* out);
+
+u64 getTickDelay(u64 delay_ms);
+
+bool checkDelayTimer(u64 tick_ref, u64 delay_ticks);
+
+void print_control_data(u64 time_s, touchPosition* tpad, circlePosition* cpad, accelVector* accl, angularRate* gyro, u32* kheld);
+
+void print_menu(void);
+
+void hidCaptureAllInputs(void);
+
+void navigateTitles(void);
 
 
 #endif // GAME_H

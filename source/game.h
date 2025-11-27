@@ -34,8 +34,6 @@ void print_control_data(u64 time_s, touchPosition* tpad, circlePosition* cpad, a
 
 void print_menu(void);
 
-void hidCaptureAllInputs(void);
-
 void navigateTitles(void);
 
 

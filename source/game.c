@@ -11,6 +11,7 @@ Author:   AllAcacia
 #include <3ds.h>
 #include <citro2d.h>
 
+#include "controls.h"
 #include "game.h"
 
 
@@ -18,20 +19,12 @@ static CJQ_Gamestate gamestate = MENU;
 static bool gamestate_change = false; // to determine if a consoleClear() is required
 static u64 tick_refresh_delay = 0;
 
-static u32 kUp;   // reads inputs released on last frame
-static u32 kDown; // reads inputs pressed on this frame
-static u32 kHeld; // reads inputs currently held
-
-static circlePosition vcpad;     // Circle-Pad vector
-// static circlePosition vcstick;   // C-Stick vector
-static accelVector vaccl;        // Accelerometer vector
-static angularRate vgyro;        // Gyroscope vector
-static touchPosition vtpad;      // Touchpad vector
-static touchPosition vtpad_prev; // Touchpad vector (from previous iteration)
-
 static u64 ticks_timer_ref;
 static u64 ticks_refresh_ref;
 static u64 time_s;
+
+
+extern InputState input;
 
 
 void getBinaryRep(int num, int len, char* out)
@@ -145,35 +138,22 @@ void print_menu(void)
 }
 
 
-void hidCaptureAllInputs(void)
-{
-	kUp = hidKeysUp();
-	kDown = hidKeysDown();
-	kHeld = hidKeysHeld();
-
-	hidTouchRead(&vtpad);
-	hidCircleRead(&vcpad);
-	hidAccelRead(&vaccl);
-	hidGyroRead(&vgyro);
-}
-
-
 void navigateTitles(void)
 {
 	// navigate between game titles
-	if ((gamestate != MENU) && (kDown & MENU_SELECT)) {
+	if ((gamestate != MENU) && (input.kDown & MENU_SELECT)) {
 		gamestate = MENU;
 		gamestate_change = true;
-	} else if ((gamestate != PROTO) && (kDown & PROTO_SELECT)) { // CJ base
+	} else if ((gamestate != PROTO) && (input.kDown & PROTO_SELECT)) { // CJ base
 		gamestate = PROTO;
 		gamestate_change = true;
-	} else if ((gamestate != PYRO) && (kDown & PYRO_SELECT)) { // CJ fire
+	} else if ((gamestate != PYRO) && (input.kDown & PYRO_SELECT)) { // CJ fire
 		gamestate = PYRO;
 		gamestate_change = true;
-	} else if ((gamestate != HYDRO) && (kDown & HYDRO_SELECT)) { // CJ water
+	} else if ((gamestate != HYDRO) && (input.kDown & HYDRO_SELECT)) { // CJ water
 		gamestate = HYDRO;
 		gamestate_change = true;
-	} else if ((gamestate != CRYO) && (kDown & CRYO_SELECT)) { // CJ snow
+	} else if ((gamestate != CRYO) && (input.kDown & CRYO_SELECT)) { // CJ snow
 		gamestate = CRYO;
 		gamestate_change = true;
 	}
@@ -186,7 +166,7 @@ void navigateTitles(void)
 	// execute title-wise functions
 	if (gamestate == MENU) {
 		if (checkDelayTimer(ticks_refresh_ref, tick_refresh_delay)) {
-			print_control_data(time_s, &vtpad, &vcpad, &vaccl, &vgyro, &kHeld);
+			print_control_data(time_s, &(input.vtpad), &(input.vcpad), &(input.vaccl), &(input.vgyro), &(input.kHeld));
 			ticks_refresh_ref = svcGetSystemTick();
 		}
 	} else if (gamestate == PROTO) {
@@ -237,7 +217,6 @@ int main(int argc, char **argv)
 	while (aptMainLoop())
 	{
 		// Scan all the inputs. This should be done once for each frame
-		hidScanInput();
 		hidCaptureAllInputs();
 
 		// update timer
@@ -246,7 +225,7 @@ int main(int argc, char **argv)
 			ticks_timer_ref = svcGetSystemTick();
 		}
 
-		if ((kDown & KEY_START) && (gamestate == MENU)) { // exit
+		if ((input.kDown & KEY_START) && (gamestate == MENU)) { // exit
 			break; // break in order to return to hbmenu
 		} else {
 			navigateTitles();
@@ -258,8 +237,6 @@ int main(int argc, char **argv)
 
 		// Wait for VBlank
 		gspWaitForVBlank();
-
-		vtpad_prev = vtpad;
 	}
 
 	hidExit();

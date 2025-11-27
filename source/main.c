@@ -14,7 +14,12 @@ This code was modified for the last time on: 12/12/2014 21:00 UTC+1
 #include <3ds.h>
 #include <citro2d.h>
 
-#define REFRESH_RATE 20 // ms
+#include "game.h"
+
+
+static CJQ_Gamestate gamestate = MENU;
+static bool gamestate_change = false; // to determine if a consoleClear() is required
+static u64 tick_refresh_delay = 0;
 
 
 void getBinaryRep(int num, int len, char* out)
@@ -86,23 +91,44 @@ void print_control_data(u64 time_s, touchPosition* tpad, circlePosition* cpad, a
 	printf("\x1b[15;0HTimer (sec): %llu", time_s);
 
 	// regular display
-	printf("\x1b[18;0HA = Card-Jitsu");
-	printf("\x1b[19;0HB = Card-Jitsu Fire (not available)");
-	printf("\x1b[20;0HY = Card-Jitsu Water (not available)");
-	printf("\x1b[21;0HX = Card-Jitsu Snow (not available)");
+	printf("\x1b[18;0HSTART = Exit Software");
+	printf("\x1b[19;0HSELECT = Main Menu");
+	printf("\x1b[20;0HA = Card-Jitsu");
+	printf("\x1b[21;0HB = Card-Jitsu Fire");
+	printf("\x1b[22;0HY = Card-Jitsu Water");
+	printf("\x1b[23;0HX = Card-Jitsu Snow");
+
+	printf("\x1b[28;0HDeveloped by AllAcacia");
+	printf("\x1b[30;0Hhttps://github.com/AllAcacia/Card-Jitsu-Quartet/");
 }
 
 
-typedef enum {
-	MENU=0, // Menu
-	PROTO,  // CJ Base
-	PYRO,   // CJ Fire
-	HYDRO,  // CJ Water
-	CRYO    // CJ Snow
-} CJQ_Gamestate;
+void print_menu(void)
+{
+	switch(gamestate) {
+		case PROTO:
+			printf("\x1b[1;0HPROTO menu");
+			break;
+		case PYRO:
+			printf("\x1b[1;0HPYRO menu");
+			break;
+		case HYDRO:
+			printf("\x1b[1;0HHYDRO menu");
+			break;
+		case CRYO:
+			printf("\x1b[1;0HCRYO menu");
+			break;
+		default:
+			printf("\x1b[1;0HMisc.");
+			break;
+	}
 
-
-static CJQ_Gamestate gamestate = MENU;
+	printf("\x1b[3;0HSELECT = Main Menu");
+	printf("\x1b[4;0HA = Card-Jitsu");
+	printf("\x1b[5;0HB = Card-Jitsu Fire");
+	printf("\x1b[6;0HY = Card-Jitsu Water");
+	printf("\x1b[7;0HX = Card-Jitsu Snow");
+}
 
 
 int main(int argc, char **argv)
@@ -117,6 +143,8 @@ int main(int argc, char **argv)
 	u64 ticks_timer_ref = svcGetSystemTick();
 	u64 ticks_refresh_ref = svcGetSystemTick();
 	u64 time_s = 0;
+
+	tick_refresh_delay = getTickDelay(REFRESH_RATE);
 
 	circlePosition* vcpad = malloc(sizeof(circlePosition));   // circle pad vector
 	circlePosition* vcstick = malloc(sizeof(circlePosition)); // c-stick vector
@@ -141,19 +169,65 @@ int main(int argc, char **argv)
 		hidAccelRead(vaccl);
 		hidGyroRead(vgyro);
 
+		// update timer
 		if (checkDelayTimer(ticks_timer_ref, getTickDelay(1000))) {
 			time_s += 1;
 			ticks_timer_ref = svcGetSystemTick();
 		}
 
-		if (kDown & KEY_START) { // exit
+		// navigate between game titles
+		if ((kDown & KEY_START) && (gamestate == MENU)) { // exit
 			break; // break in order to return to hbmenu
-		} else if ((gamestate == MENU) && (kDown & KEY_A)) { // CJ base
-			gamestate = PROTO; // change app type
-			// int code = launch_cj_proto(); // launches the base cj game
-		} else {
-			if (checkDelayTimer(ticks_refresh_ref, getTickDelay(REFRESH_RATE))) {
+		} else if ((gamestate != MENU) && (kDown & MENU_SELECT)) {
+			gamestate = MENU;
+			gamestate_change = true;
+		} else if ((gamestate != PROTO) && (kDown & PROTO_SELECT)) { // CJ base
+			gamestate = PROTO;
+			gamestate_change = true;
+		} else if ((gamestate != PYRO) && (kDown & PYRO_SELECT)) { // CJ fire
+			gamestate = PYRO;
+			gamestate_change = true;
+		} else if ((gamestate != HYDRO) && (kDown & HYDRO_SELECT)) { // CJ water
+			gamestate = HYDRO;
+			gamestate_change = true;
+		} else if ((gamestate != CRYO) && (kDown & CRYO_SELECT)) { // CJ snow
+			gamestate = CRYO;
+			gamestate_change = true;
+		}
+
+		if (gamestate_change) {
+			consoleClear();
+			gamestate_change = false;
+		}
+
+		// execute title-wise functions
+		if (gamestate == MENU) {
+			if (checkDelayTimer(ticks_refresh_ref, tick_refresh_delay)) {
 				print_control_data(time_s, vtpad, vcpad, vaccl, vgyro, &kHeld);
+				ticks_refresh_ref = svcGetSystemTick();
+			}
+		} else if (gamestate == PROTO) {
+			// int code = launch_cj_proto(); // launches the base cj game
+			if (checkDelayTimer(ticks_refresh_ref, tick_refresh_delay)) {
+				print_menu();
+				ticks_refresh_ref = svcGetSystemTick();
+			}
+		} else if (gamestate == PYRO) {
+			// int code = launch_cj_pyro(); // launches the cj fire game
+			if (checkDelayTimer(ticks_refresh_ref, tick_refresh_delay)) {
+				print_menu();
+				ticks_refresh_ref = svcGetSystemTick();
+			}
+		} else if (gamestate == HYDRO) {
+			// int code = launch_cj_hydro(); // launches the cj hydro game
+			if (checkDelayTimer(ticks_refresh_ref, tick_refresh_delay)) {
+				print_menu();
+				ticks_refresh_ref = svcGetSystemTick();
+			}
+		} else if (gamestate == CRYO) {
+			// int code = launch_cj_cryo(); // launches the cj cryo game
+			if (checkDelayTimer(ticks_refresh_ref, tick_refresh_delay)) {
+				print_menu();
 				ticks_refresh_ref = svcGetSystemTick();
 			}
 		}

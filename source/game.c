@@ -23,7 +23,6 @@ static u64 ticks_timer_ref;
 static u64 ticks_refresh_ref;
 static u64 time_s;
 
-
 extern InputState input;
 
 

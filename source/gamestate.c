@@ -76,7 +76,6 @@ int launchCJQProto(void)
         C3D_FrameEnd(0);
     }
 
-    C2D_Flush();
     C2D_SpriteSheetFree(cards_fire_sheet);
     free(cards_fire);
     C2D_SpriteSheetFree(cards_water_sheet);

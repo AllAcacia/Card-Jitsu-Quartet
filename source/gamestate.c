@@ -22,17 +22,60 @@ int launchCJQProto(void)
     consoleClear();
     print_menu();
 
+    // Create screens
+	C3D_RenderTarget* bottom = C2D_CreateScreenTarget(GFX_BOTTOM, GFX_LEFT);
+
+    // load
+    C2D_SpriteSheet cards_fire_sheet = C2D_SpriteSheetLoad("romfs:/gfx/cards_basic_f.t3x");
+    if (!cards_fire_sheet) svcBreak(USERBREAK_PANIC);
+    size_t cards_fire_len = C2D_SpriteSheetCount(cards_fire_sheet);
+    Sprite* cards_fire = initSpritesFromSpritesheet(cards_fire_sheet, cards_fire_len, 0.5f, 0.5f, BOTTOM_SCREEN_WIDTH/2, BOTTOM_SCREEN_HEIGHT/2);
+
+    C2D_SpriteSheet cards_water_sheet = C2D_SpriteSheetLoad("romfs:/gfx/cards_basic_w.t3x");
+    if (!cards_water_sheet) svcBreak(USERBREAK_PANIC);
+    size_t cards_water_len = C2D_SpriteSheetCount(cards_water_sheet);
+    Sprite* cards_water = initSpritesFromSpritesheet(cards_water_sheet, cards_water_len, 0.5f, 0.5f, BOTTOM_SCREEN_WIDTH/2, BOTTOM_SCREEN_HEIGHT/2);
+
+    C2D_SpriteSheet cards_snow_sheet = C2D_SpriteSheetLoad("romfs:/gfx/cards_basic_s.t3x");
+    if (!cards_snow_sheet) svcBreak(USERBREAK_PANIC);
+    size_t cards_snow_len = C2D_SpriteSheetCount(cards_snow_sheet);
+    Sprite* cards_snow = initSpritesFromSpritesheet(cards_snow_sheet, cards_snow_len, 0.5f, 0.5f, BOTTOM_SCREEN_WIDTH/2, BOTTOM_SCREEN_HEIGHT/2);
+
+    Sprite** cards_all = calloc(3, sizeof(Sprite*));
+    cards_all[0] = cards_fire;
+    cards_all[1] = cards_water;
+    cards_all[2] = cards_snow;
+
+    uint8_t element_i = 0;
+    uint8_t rank_i = 0;
+
     while(gamestate == PROTO) {
         // read inputs
         hidCaptureAllInputs();
         gameTimer();
-        // load
+        scrollCards(&element_i, &rank_i);
+        Sprite* card_curr = &(cards_all[element_i][rank_i]);
 
         // run game
+        // Render the scene
+		C3D_FrameBegin(C3D_FRAME_SYNCDRAW);
+		C2D_TargetClear(bottom, C2D_Color32f(1.0f, 1.0f, 1.0f, 1.0f));
+        C2D_SceneBegin(bottom);
+        C2D_DrawSprite(&(card_curr->spr));
+		C3D_FrameEnd(0);
+
         if(input.kDown & KEY_SELECT) {
             gamestate = MENU;
         }
     }
+
+    C2D_SpriteSheetFree(cards_fire_sheet);
+    free(cards_fire);
+    C2D_SpriteSheetFree(cards_water_sheet);
+    free(cards_water);
+    C2D_SpriteSheetFree(cards_snow_sheet);
+    free(cards_snow);
+
     return EXIT_SUCCESS;
 }
 
@@ -44,11 +87,12 @@ int launchCJQPyro(void)
     consoleClear();
     print_menu();
 
+    // load
+
     while(gamestate == PYRO) {
         // read inputs
         hidCaptureAllInputs();
         gameTimer();
-        // load
 
         // run game
         if(input.kDown & KEY_SELECT) {
@@ -66,11 +110,12 @@ int launchCJQHydro(void)
     consoleClear();
     print_menu();
 
+    // load
+
     while(gamestate == HYDRO) {
         // read inputs
         hidCaptureAllInputs();
         gameTimer();
-        // load
 
         // run game
         if(input.kDown & KEY_SELECT) {
@@ -88,11 +133,12 @@ int launchCJQCryo(void)
     consoleClear();
     print_menu();
 
+    // load
+
     while(gamestate == CRYO) {
         // read inputs
         hidCaptureAllInputs();
         gameTimer();
-        // load
 
         // run game
         if(input.kDown & KEY_SELECT) {
@@ -125,6 +171,37 @@ void navigateCJQStates(void)
 			ticks_refresh_ref = svcGetSystemTick();
 		}
 	}
+}
+
+
+void scrollCards(uint8_t* element, uint8_t* rank)
+{
+    if(input.kDown & KEY_DUP) {
+        if(*rank <= CARD_BASIC_SHEET_LEN) {
+            *rank += 1;
+        } else {
+            *rank = CARD_RANK_MIN;
+        }
+    } else if(input.kDown & KEY_DDOWN) {
+        if(*rank > CARD_RANK_MIN) {
+            *rank -= 1;
+        } else {
+            *rank = CARD_RANK_MAX;
+        }
+    }
+    if(input.kDown & KEY_DRIGHT) {
+        if(*element < CARD_ELEMENT_SNOW) {
+            *element += 1;
+        } else {
+            *element = CARD_ELEMENT_FIRE;
+        }
+    } else if(input.kDown & KEY_DLEFT) {
+        if(*element > CARD_ELEMENT_FIRE) {
+            *element -= 1;
+        } else {
+            *element = CARD_ELEMENT_SNOW;
+        }
+    }
 }
 
 

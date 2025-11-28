@@ -9,6 +9,7 @@ Author:   AllAcacia
 #include <limits.h>
 #include <stdlib.h>
 #include "controls.h"
+#include "sprites.h"
 
 
 #define REFRESH_RATE 20 // ms
@@ -17,6 +18,14 @@ Author:   AllAcacia
 #define PYRO_SELECT KEY_B
 #define HYDRO_SELECT KEY_Y
 #define CRYO_SELECT KEY_X
+
+// Relocate to card module!!!
+#define CARD_BASIC_SHEET_LEN 72
+#define CARD_ELEMENT_FIRE 0
+#define CARD_ELEMENT_WATER 1
+#define CARD_ELEMENT_SNOW 2
+#define CARD_RANK_MIN 0
+#define CARD_RANK_MAX 12
 
 
 typedef enum {
@@ -37,6 +46,8 @@ int launchCJQHydro(void);
 int launchCJQCryo(void);
 
 void navigateCJQStates(void);
+
+void scrollCards(uint8_t* element, uint8_t* rank);
 
 void gameTimer(void);
 

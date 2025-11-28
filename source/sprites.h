@@ -10,8 +10,10 @@ Author:   AllAcacia
 #include <stdlib.h>
 
 #define MAX_SPRITES 768
-#define SCREEN_WIDTH  400
-#define SCREEN_HEIGHT 240
+#define TOP_SCREEN_WIDTH 400
+#define TOP_SCREEN_HEIGHT 240
+#define BOTTOM_SCREEN_WIDTH 320
+#define BOTTOM_SCREEN_HEIGHT 240
 
 
 typedef struct
@@ -24,7 +26,7 @@ typedef struct
 } Sprite;
 
 
-Sprite* initSpritesFromSpritesheet(C2D_SpriteSheet spriteSheet);
+Sprite* initSpritesFromSpritesheet(C2D_SpriteSheet spriteSheet, size_t numImages, float piv_x, float piv_y, uint8_t loc_x, uint8_t loc_y);
 
 
 #endif // SPRITES_H

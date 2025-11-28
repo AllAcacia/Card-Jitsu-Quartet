@@ -25,6 +25,15 @@ void screensInit(void)
 }
 
 
+Sprite* loadCardSprites(C2D_SpriteSheet sheet)
+{
+    if  (!sheet) svcBreak(USERBREAK_PANIC);
+    size_t cards_len = C2D_SpriteSheetCount(sheet);
+    Sprite* cards_ptr = initSpritesFromSpritesheet(sheet, cards_len, 0.5f, 0.5f, BOTTOM_SCREEN_WIDTH/2, BOTTOM_SCREEN_HEIGHT/2);
+    return cards_ptr;
+}
+
+
 int launchCJQProto(void)
 {
     gamestate = PROTO;
@@ -34,19 +43,11 @@ int launchCJQProto(void)
 
     // load
     C2D_SpriteSheet cards_fire_sheet = C2D_SpriteSheetLoad("romfs:/gfx/cards_basic_f.t3x");
-    if  (!cards_fire_sheet) svcBreak(USERBREAK_PANIC);
-    size_t cards_fire_len = C2D_SpriteSheetCount(cards_fire_sheet);
-    Sprite* cards_fire = initSpritesFromSpritesheet(cards_fire_sheet, cards_fire_len, 0.5f, 0.5f, BOTTOM_SCREEN_WIDTH/2, BOTTOM_SCREEN_HEIGHT/2);
-
+    Sprite* cards_fire = loadCardSprites(cards_fire_sheet);
     C2D_SpriteSheet cards_water_sheet = C2D_SpriteSheetLoad("romfs:/gfx/cards_basic_w.t3x");
-    if  (!cards_water_sheet) svcBreak(USERBREAK_PANIC);
-    size_t cards_water_len = C2D_SpriteSheetCount(cards_water_sheet);
-    Sprite* cards_water = initSpritesFromSpritesheet(cards_water_sheet, cards_water_len, 0.5f, 0.5f, BOTTOM_SCREEN_WIDTH/2, BOTTOM_SCREEN_HEIGHT/2);
-
+    Sprite* cards_water = loadCardSprites(cards_water_sheet);
     C2D_SpriteSheet cards_snow_sheet = C2D_SpriteSheetLoad("romfs:/gfx/cards_basic_s.t3x");
-    if  (!cards_snow_sheet) svcBreak(USERBREAK_PANIC);
-    size_t cards_snow_len = C2D_SpriteSheetCount(cards_snow_sheet);
-    Sprite* cards_snow = initSpritesFromSpritesheet(cards_snow_sheet, cards_snow_len, 0.5f, 0.5f, BOTTOM_SCREEN_WIDTH/2, BOTTOM_SCREEN_HEIGHT/2);
+    Sprite* cards_snow = loadCardSprites(cards_snow_sheet);
 
     Sprite** cards_all = calloc(3, sizeof(Sprite*));
     cards_all[0] = cards_fire;

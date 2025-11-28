@@ -186,7 +186,7 @@ void scrollCards(uint8_t* element, uint8_t* rank)
         if(*rank > CARD_RANK_MIN) {
             *rank -= 1;
         } else {
-            *rank = CARD_RANK_MAX;
+            *rank = CARD_BASIC_SHEET_LEN-1;
         }
     }
     if(input.kDown & KEY_DRIGHT) {

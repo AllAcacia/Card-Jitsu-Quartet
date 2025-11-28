@@ -27,17 +27,17 @@ int launchCJQProto(void)
 
     // load
     C2D_SpriteSheet cards_fire_sheet = C2D_SpriteSheetLoad("romfs:/gfx/cards_basic_f.t3x");
-    if (!cards_fire_sheet) svcBreak(USERBREAK_PANIC);
+    if  (!cards_fire_sheet) svcBreak(USERBREAK_PANIC);
     size_t cards_fire_len = C2D_SpriteSheetCount(cards_fire_sheet);
     Sprite* cards_fire = initSpritesFromSpritesheet(cards_fire_sheet, cards_fire_len, 0.5f, 0.5f, BOTTOM_SCREEN_WIDTH/2, BOTTOM_SCREEN_HEIGHT/2);
 
     C2D_SpriteSheet cards_water_sheet = C2D_SpriteSheetLoad("romfs:/gfx/cards_basic_w.t3x");
-    if (!cards_water_sheet) svcBreak(USERBREAK_PANIC);
+    if  (!cards_water_sheet) svcBreak(USERBREAK_PANIC);
     size_t cards_water_len = C2D_SpriteSheetCount(cards_water_sheet);
     Sprite* cards_water = initSpritesFromSpritesheet(cards_water_sheet, cards_water_len, 0.5f, 0.5f, BOTTOM_SCREEN_WIDTH/2, BOTTOM_SCREEN_HEIGHT/2);
 
     C2D_SpriteSheet cards_snow_sheet = C2D_SpriteSheetLoad("romfs:/gfx/cards_basic_s.t3x");
-    if (!cards_snow_sheet) svcBreak(USERBREAK_PANIC);
+    if  (!cards_snow_sheet) svcBreak(USERBREAK_PANIC);
     size_t cards_snow_len = C2D_SpriteSheetCount(cards_snow_sheet);
     Sprite* cards_snow = initSpritesFromSpritesheet(cards_snow_sheet, cards_snow_len, 0.5f, 0.5f, BOTTOM_SCREEN_WIDTH/2, BOTTOM_SCREEN_HEIGHT/2);
 
@@ -64,7 +64,7 @@ int launchCJQProto(void)
         C2D_DrawSprite(&(card_curr->spr));
 		C3D_FrameEnd(0);
 
-        if(input.kDown & KEY_SELECT) {
+        if (input.kDown & KEY_SELECT) {
             gamestate = MENU;
         }
     }
@@ -95,7 +95,7 @@ int launchCJQPyro(void)
         gameTimer();
 
         // run game
-        if(input.kDown & KEY_SELECT) {
+        if (input.kDown & KEY_SELECT) {
             gamestate = MENU;
         }
     }
@@ -118,7 +118,7 @@ int launchCJQHydro(void)
         gameTimer();
 
         // run game
-        if(input.kDown & KEY_SELECT) {
+        if (input.kDown & KEY_SELECT) {
             gamestate = MENU;
         }
     }
@@ -141,7 +141,7 @@ int launchCJQCryo(void)
         gameTimer();
 
         // run game
-        if(input.kDown & KEY_SELECT) {
+        if (input.kDown & KEY_SELECT) {
             gamestate = MENU;
         }
     }
@@ -154,19 +154,19 @@ void navigateCJQStates(void)
     gameTimer();
 
 	// navigate between game titles
-	if ((gamestate != PROTO) && (input.kDown & PROTO_SELECT)) { // CJ base
+	if  ((gamestate != PROTO) && (input.kDown & PROTO_SELECT)) { // CJ base
         launchCJQProto();
-	} else if ((gamestate != PYRO) && (input.kDown & PYRO_SELECT)) { // CJ fire
+	} else if  ((gamestate != PYRO) && (input.kDown & PYRO_SELECT)) { // CJ fire
         launchCJQPyro();
-	} else if ((gamestate != HYDRO) && (input.kDown & HYDRO_SELECT)) { // CJ water
+	} else if  ((gamestate != HYDRO) && (input.kDown & HYDRO_SELECT)) { // CJ water
         launchCJQHydro();
-	} else if ((gamestate != CRYO) && (input.kDown & CRYO_SELECT)) { // CJ snow
+	} else if  ((gamestate != CRYO) && (input.kDown & CRYO_SELECT)) { // CJ snow
         launchCJQCryo();
 	}
 
 	// else
 	if (gamestate == MENU) {
-		if (checkDelayTimer(ticks_refresh_ref, tick_refresh_delay)) {
+		if  (checkDelayTimer(ticks_refresh_ref, tick_refresh_delay)) {
 			print_control_data(time_s, &(input.vtpad), &(input.vcpad), &(input.vaccl), &(input.vgyro), &(input.kHeld));
 			ticks_refresh_ref = svcGetSystemTick();
 		}
@@ -176,27 +176,27 @@ void navigateCJQStates(void)
 
 void scrollCards(uint8_t* element, uint8_t* rank)
 {
-    if(input.kDown & KEY_DUP) {
-        if(*rank <= CARD_BASIC_SHEET_LEN) {
+    if (input.kDown & KEY_DUP) {
+        if (*rank <= CARD_BASIC_SHEET_LEN) {
             *rank += 1;
         } else {
             *rank = CARD_RANK_MIN;
         }
-    } else if(input.kDown & KEY_DDOWN) {
-        if(*rank > CARD_RANK_MIN) {
+    } else if (input.kDown & KEY_DDOWN) {
+        if (*rank > CARD_RANK_MIN) {
             *rank -= 1;
         } else {
             *rank = CARD_BASIC_SHEET_LEN-1;
         }
     }
-    if(input.kDown & KEY_DRIGHT) {
-        if(*element < CARD_ELEMENT_SNOW) {
+    if (input.kDown & KEY_DRIGHT) {
+        if (*element < CARD_ELEMENT_SNOW) {
             *element += 1;
         } else {
             *element = CARD_ELEMENT_FIRE;
         }
-    } else if(input.kDown & KEY_DLEFT) {
-        if(*element > CARD_ELEMENT_FIRE) {
+    } else if (input.kDown & KEY_DLEFT) {
+        if (*element > CARD_ELEMENT_FIRE) {
             *element -= 1;
         } else {
             *element = CARD_ELEMENT_SNOW;
@@ -207,7 +207,7 @@ void scrollCards(uint8_t* element, uint8_t* rank)
 
 void gameTimer(void)
 {
-    if (checkDelayTimer(ticks_timer_ref, getTickDelay(1000))) {
+    if  (checkDelayTimer(ticks_timer_ref, getTickDelay(1000))) {
         time_s += 1;
         ticks_timer_ref = svcGetSystemTick();
     }
@@ -225,7 +225,7 @@ bool checkDelayTimer(u64 tick_ref, u64 delay_ticks)
 {
 	u64 tick_curr = svcGetSystemTick();
 	bool result;
-	if (tick_curr >= tick_ref) {
+	if  (tick_curr >= tick_ref) {
 		result = (tick_curr - tick_ref) >= delay_ticks;
 	} else {
 		result = (tick_curr + (ULLONG_MAX - tick_ref)) >= delay_ticks;
@@ -241,8 +241,8 @@ void getBinaryRep(int num, int len, char* out)
 	// Check for each bit.
     for (int i=(len-1); i>=0; i--) {
         
-        // If i'th bit is set 
-        if (num&(1<<i)) out[(len-1)-i] = '1';
+        // if  i'th bit is set 
+        if  (num&(1<<i)) out[(len-1)-i] = '1';
 		else out[(len-1)-i] = '0';
     }
 	out[len] = '\0';

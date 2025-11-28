@@ -48,5 +48,5 @@
 *.smdh
 *.map
 *.t3x
-/builds/*
-/romfs/*
+/build/
+/romfs/

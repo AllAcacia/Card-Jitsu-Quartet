@@ -15,12 +15,13 @@ Author:   AllAcacia
 #define BOTTOM_SCREEN_WIDTH 320
 #define BOTTOM_SCREEN_HEIGHT 240
 
+#define C2D_BLACK C2D_Color32(0, 0, 0, 255)
+#define C2D_WHITE C2D_Color32(255, 255, 255, 255)
+
 
 typedef struct
 {
 	C2D_Sprite spr;
-    float x;  // position x
-    float y;  // position y
 	float dx; // velocity x
     float dy; // velocity y
 } Sprite;

@@ -23,6 +23,7 @@ int main(int argc, char **argv)
 	C2D_Prepare();
 	hidInit();
 	consoleInit(GFX_TOP, NULL);
+	screensInit();
 	
 	ticks_timer_ref = svcGetSystemTick();
 	ticks_refresh_ref = svcGetSystemTick();
@@ -40,7 +41,7 @@ int main(int argc, char **argv)
 		if ((input.kDown & KEY_START) && (gamestate == MENU)) { // exit
 			break; // break in order to return to hbmenu
 		} else {
-			navigateCJQStates();
+			navigateMenu();
 		}
 
 		// Flush and swap framebuffers

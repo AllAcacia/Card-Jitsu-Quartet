@@ -37,6 +37,8 @@ typedef enum {
 } CJQ_Gamestate;
 
 
+void screensInit(void);
+
 int launchCJQProto(void);
 
 int launchCJQPyro(void);
@@ -45,7 +47,7 @@ int launchCJQHydro(void);
 
 int launchCJQCryo(void);
 
-void navigateCJQStates(void);
+void navigateMenu(void);
 
 void scrollCards(uint8_t* element, uint8_t* rank);
 

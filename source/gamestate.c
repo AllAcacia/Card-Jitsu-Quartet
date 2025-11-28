@@ -7,6 +7,8 @@ Author:   AllAcacia
 
 
 CJQ_Gamestate gamestate;
+C3D_RenderTarget* top;
+C3D_RenderTarget* bottom;
 extern InputState input;
 
 u64 tick_refresh_delay;
@@ -15,15 +17,20 @@ u64 ticks_refresh_ref;
 u64 time_s = 0;
 
 
+void screensInit(void)
+{
+    // Create screens
+    top = C2D_CreateScreenTarget(GFX_TOP, GFX_LEFT);
+	bottom = C2D_CreateScreenTarget(GFX_BOTTOM, GFX_LEFT);
+}
+
+
 int launchCJQProto(void)
 {
     gamestate = PROTO;
 
     consoleClear();
     print_menu();
-
-    // Create screens
-	C3D_RenderTarget* bottom = C2D_CreateScreenTarget(GFX_BOTTOM, GFX_LEFT);
 
     // load
     C2D_SpriteSheet cards_fire_sheet = C2D_SpriteSheetLoad("romfs:/gfx/cards_basic_f.t3x");
@@ -49,26 +56,27 @@ int launchCJQProto(void)
     uint8_t element_i = 0;
     uint8_t rank_i = 0;
 
-    while(gamestate == PROTO) {
+    while (gamestate == PROTO) {
         // read inputs
         hidCaptureAllInputs();
         gameTimer();
-        scrollCards(&element_i, &rank_i);
-        Sprite* card_curr = &(cards_all[element_i][rank_i]);
-
-        // run game
-        // Render the scene
-		C3D_FrameBegin(C3D_FRAME_SYNCDRAW);
-		C2D_TargetClear(bottom, C2D_Color32f(1.0f, 1.0f, 1.0f, 1.0f));
-        C2D_SceneBegin(bottom);
-        C2D_DrawSprite(&(card_curr->spr));
-		C3D_FrameEnd(0);
-
         if (input.kDown & KEY_SELECT) {
             gamestate = MENU;
         }
+        
+        // run game
+        scrollCards(&element_i, &rank_i);
+        Sprite* card_curr = &(cards_all[element_i][rank_i]);
+
+        // Render the scene
+		C3D_FrameBegin(C3D_FRAME_SYNCDRAW);
+        C2D_TargetClear(bottom, C2D_WHITE);
+        C2D_SceneBegin(bottom);
+        C2D_DrawSprite(&(card_curr->spr));
+        C3D_FrameEnd(0);
     }
 
+    C2D_Flush();
     C2D_SpriteSheetFree(cards_fire_sheet);
     free(cards_fire);
     C2D_SpriteSheetFree(cards_water_sheet);
@@ -89,7 +97,7 @@ int launchCJQPyro(void)
 
     // load
 
-    while(gamestate == PYRO) {
+    while (gamestate == PYRO) {
         // read inputs
         hidCaptureAllInputs();
         gameTimer();
@@ -112,7 +120,7 @@ int launchCJQHydro(void)
 
     // load
 
-    while(gamestate == HYDRO) {
+    while (gamestate == HYDRO) {
         // read inputs
         hidCaptureAllInputs();
         gameTimer();
@@ -135,7 +143,7 @@ int launchCJQCryo(void)
 
     // load
 
-    while(gamestate == CRYO) {
+    while (gamestate == CRYO) {
         // read inputs
         hidCaptureAllInputs();
         gameTimer();
@@ -149,7 +157,7 @@ int launchCJQCryo(void)
 }
 
 
-void navigateCJQStates(void)
+void navigateMenu(void)
 {
     gameTimer();
 
@@ -177,7 +185,7 @@ void navigateCJQStates(void)
 void scrollCards(uint8_t* element, uint8_t* rank)
 {
     if (input.kDown & KEY_DUP) {
-        if (*rank <= CARD_BASIC_SHEET_LEN) {
+        if (*rank < CARD_BASIC_SHEET_LEN-1) {
             *rank += 1;
         } else {
             *rank = CARD_RANK_MIN;

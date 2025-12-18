@@ -9,7 +9,6 @@ Author:   AllAcacia
 CJQ_Gamestate gamestate;
 C3D_RenderTarget* top;
 C3D_RenderTarget* bottom;
-extern InputState input;
 
 u64 tick_refresh_delay;
 u64 ticks_timer_ref;

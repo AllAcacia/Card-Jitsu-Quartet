@@ -20,4 +20,7 @@ typedef struct {
     float ki; // integral gain
 
     u64   dt; // frequency of iteration updates
+
+    Matrix2D_Float* A; // main EoM in CCF
+    Matrix2D_Float* B; // input with optional CL feedback
 } SecondOrderDTS;

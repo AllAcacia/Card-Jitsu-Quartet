@@ -6,6 +6,7 @@ Author:   AllAcacia
 
 #include <stdint.h>
 #include <stdlib.h>
+#include <math.h>
 
 
 typedef struct {

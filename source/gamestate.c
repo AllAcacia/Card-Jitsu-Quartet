@@ -173,7 +173,7 @@ void navigateMenu(void)
 
 	// else
 	if (gamestate == MENU) {
-		if  (checkDelayTimer(ticks_refresh_ref, tick_refresh_delay)) {
+		if (checkDelayTimer(ticks_refresh_ref, tick_refresh_delay)) {
 			print_control_data(time_s, &(input.vtpad), &(input.vcpad), &(input.vaccl), &(input.vgyro), &(input.kHeld));
 			ticks_refresh_ref = svcGetSystemTick();
 		}

@@ -23,16 +23,16 @@ typedef enum {
 } MathOp;
 
 
-Matrix2D_Float* mat2Dfloat_init(size_t m, size_t n);
+Matrix2D_Float mat2Dfloat_init(const size_t m, const size_t n);
 
-void mat2Dfloat_fillzeros(Matrix2D_Float* ptr);
+void mat2Dfloat_fillzeros(const Matrix2D_Float* ptr);
 
 void mat2Dfloat_del(Matrix2D_Float* ptr);
 
-float mat2Dfloat_return(const Matrix2D_Float* ptr, size_t i, size_t j);
+float mat2Dfloat_return(const Matrix2D_Float* ptr, const size_t i, const size_t j);
 
-void mat2Dfloat_insert(Matrix2D_Float* ptr, size_t i, size_t j, float val);
+void mat2Dfloat_insert(const Matrix2D_Float* ptr, const size_t i, const size_t j, float val);
 
-void mat2Dfloat_arithmetic(const Matrix2D_Float* a, const Matrix2D_Float* b, Matrix2D_Float* c, MathOp mode);
+Matrix2D_Float mat2Dfloat_arithmetic(const Matrix2D_Float* a, const Matrix2D_Float* b, const MathOp mode);
 
-void mat2Dfloat_matmul(const Matrix2D_Float* a, const Matrix2D_Float* b, Matrix2D_Float* c);
+Matrix2D_Float mat2Dfloat_matmul(const Matrix2D_Float* a, const Matrix2D_Float* b);

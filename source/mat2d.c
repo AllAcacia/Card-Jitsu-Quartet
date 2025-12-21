@@ -64,7 +64,7 @@ void mat2Dfloat_arithmetic(const Matrix2D_Float* a, const Matrix2D_Float* b, Mat
 {
     // mode: 0 = add, 1 = sub
     if(a && b && c) {
-        if((a->m == b->m) && (a->n == b->n)) {
+        if((a->m == b->m) && (a->n == b->n) && (a->m == c->m) && (a->n == c->n)) {
             for (size_t i = 0; i < a->m; i++) { // for each row
                 for (size_t j = 0; j < a->n; j++) { // for each col
                     float av = mat2Dfloat_return(a, i, j);

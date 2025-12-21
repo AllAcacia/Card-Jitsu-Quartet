@@ -5,7 +5,7 @@ Author:   AllAcacia
 
 
 #include "3ds.h" // for u64
-#include "matrix.h"
+#include "mat2d.h"
 
 
 typedef struct {

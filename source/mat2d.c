@@ -86,6 +86,19 @@ void mat2Dfloat_arithmetic(const Matrix2D_Float* a, const Matrix2D_Float* b, Mat
 }
 
 
+void mat2Dfloat_scale(const Matrix2D_Float* a, const float var)
+{
+    if(a) {
+        for (size_t i = 0; i < a->m; i++) { // for each row
+            for (size_t j = 0; j < a->n; j++) { // for each col
+                float av = mat2Dfloat_return(a, i, j);
+                mat2Dfloat_insert(a, i, j, av * var);
+            }
+        }
+    }
+}
+
+
 void mat2Dfloat_matmul(const Matrix2D_Float* a, const Matrix2D_Float* b, Matrix2D_Float* c)
 {
     // carries out matrix multiplication (a@b) provided

@@ -15,7 +15,7 @@ Matrix2D_Float* mat2Dfloat_init(const size_t m, const size_t n)
     mat->m = m;
     mat->n = n;
     if(mat->mat_float != NULL) {
-        mat2Dfloat_fillzeros(&mat);
+        mat2Dfloat_fillzeros(mat);
     }
     return mat;
 }

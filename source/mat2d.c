@@ -86,13 +86,16 @@ void mat2Dfloat_arithmetic(const Matrix2D_Float* a, const Matrix2D_Float* b, Mat
 }
 
 
-void mat2Dfloat_scale(const Matrix2D_Float* a, const float var)
+void mat2Dfloat_scale(const Matrix2D_Float* a, Matrix2D_Float* b, const float var)
 {
-    if(a) {
-        for (size_t i = 0; i < a->m; i++) { // for each row
-            for (size_t j = 0; j < a->n; j++) { // for each col
-                float av = mat2Dfloat_return(a, i, j);
-                mat2Dfloat_insert(a, i, j, av * var);
+    // linearly scales matrix "a", outputted into "b".
+    if(a && b) {
+        if((a->m == b->m) && (a->n == b->n)) {
+            for (size_t i = 0; i < a->m; i++) { // for each row
+                for (size_t j = 0; j < a->n; j++) { // for each col
+                    float av = mat2Dfloat_return(a, i, j);
+                    mat2Dfloat_insert(b, i, j, av * var);
+                }
             }
         }
     }

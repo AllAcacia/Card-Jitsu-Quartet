@@ -36,6 +36,6 @@ void mat2Dfloat_insert(const Matrix2D_Float* ptr, const size_t i, const size_t j
 
 void mat2Dfloat_arithmetic(const Matrix2D_Float* a, const Matrix2D_Float* b, Matrix2D_Float* c, const MathOp mode);
 
-void mat2Dfloat_scale(const Matrix2D_Float* a, const float var);
+void mat2Dfloat_scale(const Matrix2D_Float* a, Matrix2D_Float* b, const float var);
 
 void mat2Dfloat_matmul(const Matrix2D_Float* a, const Matrix2D_Float* b, Matrix2D_Float* c);

@@ -7,14 +7,14 @@ Author:   AllAcacia
 #include "mat2d.h"
 
 
-Matrix2D_Float mat2Dfloat_init(const size_t m, const size_t n)
+Matrix2D_Float* mat2Dfloat_init(const size_t m, const size_t n)
 {
     // allocates memory to new matrix object
-    Matrix2D_Float mat;
-    mat.mat_float = malloc(m * n * sizeof(float));
-    mat.m = m;
-    mat.n = n;
-    if(mat.mat_float) {
+    Matrix2D_Float* mat = malloc(sizeof(Matrix2D_Float));
+    mat->mat_float = calloc(n*m, sizeof(float));
+    mat->m = m;
+    mat->n = n;
+    if(mat->mat_float != NULL) {
         mat2Dfloat_fillzeros(&mat);
     }
     return mat;
@@ -58,10 +58,10 @@ void mat2Dfloat_insert(const Matrix2D_Float* ptr, const size_t i, const size_t j
 }
 
 
-Matrix2D_Float mat2Dfloat_arithmetic(const Matrix2D_Float* a, const Matrix2D_Float* b, const MathOp mode)
+void mat2Dfloat_arithmetic(const Matrix2D_Float* a, const Matrix2D_Float* b, Matrix2D_Float* c, const MathOp mode)
 {
-    // mode: 0 = add, 1 = sub
-    Matrix2D_Float c = mat2Dfloat_init(a->m, a->n);
+    // does matrix, element-wise arithmetic of one of four types.
+    // This function stores the result in a matrix passed in parameters.
     if(a && b) {
         if((a->m == b->m) && (a->n == b->n)) {
             for (size_t i = 0; i < a->m; i++) { // for each row
@@ -70,39 +70,39 @@ Matrix2D_Float mat2Dfloat_arithmetic(const Matrix2D_Float* a, const Matrix2D_Flo
                     float bv = mat2Dfloat_return(b, i, j);
                     
                     if(mode == OP_ADD) {        // addition
-                        mat2Dfloat_insert(&c, i, j, av + bv);
+                        mat2Dfloat_insert(c, i, j, av + bv);
                     } else if(mode == OP_SUB) { // subtraction
-                        mat2Dfloat_insert(&c, i, j, av - bv);
+                        mat2Dfloat_insert(c, i, j, av - bv);
                     } else if(mode == OP_MUL) { // multiplication
-                        mat2Dfloat_insert(&c, i, j, av * bv);
+                        mat2Dfloat_insert(c, i, j, av * bv);
                     } else if(mode == OP_DIV && bv != 0.0f) { // division
-                        mat2Dfloat_insert(&c, i, j, av / bv);
+                        mat2Dfloat_insert(c, i, j, av / bv);
                     }
                 }
             }
         }
     }
-    return c;
+    // return c;
 }
 
 
-Matrix2D_Float mat2Dfloat_matmul(const Matrix2D_Float* a, const Matrix2D_Float* b)
+void mat2Dfloat_matmul(const Matrix2D_Float* a, const Matrix2D_Float* b, Matrix2D_Float* c)
 {
     // carries out matrix multiplication (a@b) provided
     // both of their dimensions conform, and c is correct.
-    Matrix2D_Float c = mat2Dfloat_init(a->m, b->n);
+    // This function stores the result in a matrix passed in parameters.
     if(a && b) {
-        if(a->n == b->m) {
+        if((a->n == b->m) && (c->m == a->m) && (c->n == b->n)) {
             for(size_t i = 0; i < a->m; i++) { // for each row
                 for(size_t j = 0; j < b->n; j++) { // for each col
                     float sum = 0;
                     for(size_t k = 0; k < a->n; k++) {
                         sum += mat2Dfloat_return(a, i, k) * mat2Dfloat_return(b, k, j);
                     }
-                    mat2Dfloat_insert(&c, i, j, sum); // insert result
+                    mat2Dfloat_insert(c, i, j, sum); // insert result
                 }
             }
         }
     }
-    return c;
+    // return c;
 }

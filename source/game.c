@@ -18,12 +18,8 @@ int main(int argc, char **argv)
 	// Init libs
 	romfsInit();
 	gfxInitDefault();
-	C3D_Init(C3D_DEFAULT_CMDBUF_SIZE);
-	C2D_Init(C2D_DEFAULT_MAX_OBJECTS);
-	C2D_Prepare();
 	hidInit();
 	consoleInit(GFX_TOP, NULL);
-	screensInit();
 	
 	ticks_timer_ref = svcGetSystemTick();
 	ticks_refresh_ref = svcGetSystemTick();
@@ -52,8 +48,6 @@ int main(int argc, char **argv)
 		gspWaitForVBlank();
 	}
 
-	C2D_Fini();
-	C3D_Fini();
 	hidExit();
 	gfxExit();
 	return 0;

@@ -7,8 +7,8 @@ Author:   AllAcacia
 
 
 CJQ_Gamestate gamestate;
-C3D_RenderTarget* top;
-C3D_RenderTarget* bottom;
+C3D_RenderTarget* top_screen;
+C3D_RenderTarget* bot_screen;
 
 u64 tick_refresh_delay;
 u64 ticks_timer_ref;
@@ -19,17 +19,9 @@ u64 time_s = 0;
 void screensInit(void)
 {
     // Create screens
-    top = C2D_CreateScreenTarget(GFX_TOP, GFX_LEFT);
-	bottom = C2D_CreateScreenTarget(GFX_BOTTOM, GFX_LEFT);
-}
-
-
-Sprite* loadCardSprites(C2D_SpriteSheet sheet)
-{
-    if  (!sheet) svcBreak(USERBREAK_PANIC);
-    size_t cards_len = C2D_SpriteSheetCount(sheet);
-    Sprite* cards_ptr = initSpritesFromSpritesheet(sheet, cards_len, 0.5f, 0.5f, BOTTOM_SCREEN_WIDTH/2, BOTTOM_SCREEN_HEIGHT/2);
-    return cards_ptr;
+    top_screen = C2D_CreateScreenTarget(GFX_TOP, GFX_LEFT);
+	bot_screen = C2D_CreateScreenTarget(GFX_BOTTOM, GFX_LEFT);
+    tick_refresh_delay = getTickDelay(REFRESH_RATE);
 }
 
 
@@ -37,18 +29,30 @@ int launchCJQProto(void)
 {
     gamestate = PROTO;
 
+    // Clear Screen
     consoleClear();
     print_menu();
 
-    // load
-    C2D_SpriteSheet cards_fire_sheet = C2D_SpriteSheetLoad("romfs:/gfx/cards_basic_f.t3x");
-    Sprite* cards_fire = loadCardSprites(cards_fire_sheet);
-    C2D_SpriteSheet cards_water_sheet = C2D_SpriteSheetLoad("romfs:/gfx/cards_basic_w.t3x");
-    Sprite* cards_water = loadCardSprites(cards_water_sheet);
-    C2D_SpriteSheet cards_snow_sheet = C2D_SpriteSheetLoad("romfs:/gfx/cards_basic_s.t3x");
-    Sprite* cards_snow = loadCardSprites(cards_snow_sheet);
+    // Initialize C2D
+    C3D_Init(C3D_DEFAULT_CMDBUF_SIZE);
+	C2D_Init(C2D_DEFAULT_MAX_OBJECTS);
+	C2D_Prepare();
+    screensInit();
 
-    Sprite** cards_all = calloc(3, sizeof(Sprite*));
+    // Load Card Spritesheets
+    C2D_SpriteSheet cards_fire_sheet = C2D_SpriteSheetLoad("romfs:/gfx/cards_basic_f.t3x");
+    C2D_Sprite cards_fire[FIRE_CARDS_NUM];
+    loadSpritesFromSpritesheet(cards_fire, cards_fire_sheet, C2D_SpriteSheetCount(cards_fire_sheet), 0.5f, 0.5f, BOTTOM_SCREEN_WIDTH/2, BOTTOM_SCREEN_HEIGHT/2, 0.0f);
+    
+    C2D_SpriteSheet cards_water_sheet = C2D_SpriteSheetLoad("romfs:/gfx/cards_basic_w.t3x");
+    C2D_Sprite cards_water[WATER_CARDS_NUM];
+    loadSpritesFromSpritesheet(cards_water, cards_water_sheet, C2D_SpriteSheetCount(cards_water_sheet), 0.5f, 0.5f, BOTTOM_SCREEN_WIDTH/2, BOTTOM_SCREEN_HEIGHT/2, 0.0f);
+
+    C2D_SpriteSheet cards_snow_sheet = C2D_SpriteSheetLoad("romfs:/gfx/cards_basic_s.t3x");
+    C2D_Sprite cards_snow[SNOW_CARDS_NUM];
+    loadSpritesFromSpritesheet(cards_snow, cards_snow_sheet, C2D_SpriteSheetCount(cards_snow_sheet), 0.5f, 0.5f, BOTTOM_SCREEN_WIDTH/2, BOTTOM_SCREEN_HEIGHT/2, 0.0f);
+
+    C2D_Sprite* cards_all[FIRE_CARDS_NUM+WATER_CARDS_NUM+SNOW_CARDS_NUM];
     cards_all[0] = cards_fire;
     cards_all[1] = cards_water;
     cards_all[2] = cards_snow;
@@ -56,32 +60,54 @@ int launchCJQProto(void)
     uint8_t element_i = 0;
     uint8_t rank_i = 0;
 
+    C2D_Sprite* card_curr = &(cards_all[element_i][rank_i]);
+
+    SecondOrderDTS touchLocX_DTS;
+    SecondOrderDTS touchLocY_DTS;
+    dynamicSS_init(&touchLocX_DTS, 1.0f, 0.95f, ((float)REFRESH_RATE)/1000.0f);
+    dynamicSS_setstate(&touchLocX_DTS, BOTTOM_SCREEN_WIDTH/2, 0.0f);
+    dynamicSS_init(&touchLocY_DTS, 1.0f, 0.95f, ((float)REFRESH_RATE)/1000.0f);
+    dynamicSS_setstate(&touchLocX_DTS, BOTTOM_SCREEN_HEIGHT/2, 0.0f);
+
+    // Set reference time for refresh
+    ticks_refresh_ref = svcGetSystemTick();
     while (gamestate == PROTO) {
         // read inputs
         hidCaptureAllInputs();
         gameTimer();
+
         if (input.kDown & KEY_SELECT) {
             gamestate = MENU;
         }
         
         // run game
         scrollCards(&element_i, &rank_i);
-        Sprite* card_curr = &(cards_all[element_i][rank_i]);
+        card_curr = &(cards_all[element_i][rank_i]);
+        
+        if(input.kHeld & KEY_TOUCH) { // If touch-screen pressed, iterate DTS
+            dynamicSS_iterate(&touchLocX_DTS, (float)input.vtpad.px);
+            dynamicSS_iterate(&touchLocY_DTS, (float)input.vtpad.py);
+        } else {
+            dynamicSS_iterate(&touchLocX_DTS, mat2Dfloat_return(&touchLocX_DTS.x1, 0, 0));
+            dynamicSS_iterate(&touchLocY_DTS, mat2Dfloat_return(&touchLocY_DTS.x1, 0, 0));
+        } C2D_SpriteMove(card_curr, mat2Dfloat_return(&touchLocX_DTS.x1, 0, 0), mat2Dfloat_return(&touchLocY_DTS.x1, 0, 0));
 
         // Render the scene
 		C3D_FrameBegin(C3D_FRAME_SYNCDRAW);
-        C2D_TargetClear(bottom, C2D_WHITE);
-        C2D_SceneBegin(bottom);
-        C2D_DrawSprite(&(card_curr->spr));
+        C2D_TargetClear(bot_screen, C2D_WHITE);
+        C2D_SceneBegin(bot_screen);
+        C2D_DrawSprite(card_curr);
         C3D_FrameEnd(0);
+        
+        refreshWait();
     }
 
     C2D_SpriteSheetFree(cards_fire_sheet);
-    free(cards_fire);
     C2D_SpriteSheetFree(cards_water_sheet);
-    free(cards_water);
     C2D_SpriteSheetFree(cards_snow_sheet);
-    free(cards_snow);
+
+    C2D_Fini();
+	C3D_Fini();
 
     return EXIT_SUCCESS;
 }
@@ -91,10 +117,15 @@ int launchCJQPyro(void)
 {
     gamestate = PYRO;
 
+    // Clear Screen
     consoleClear();
     print_menu();
 
-    // load
+    // Initialize C2D
+    C3D_Init(C3D_DEFAULT_CMDBUF_SIZE);
+	C2D_Init(C2D_DEFAULT_MAX_OBJECTS);
+	C2D_Prepare();
+    screensInit();
 
     while (gamestate == PYRO) {
         // read inputs
@@ -105,7 +136,15 @@ int launchCJQPyro(void)
         if (input.kDown & KEY_SELECT) {
             gamestate = MENU;
         }
+
+        C3D_FrameBegin(C3D_FRAME_SYNCDRAW);
+        C2D_TargetClear(bot_screen, C2D_BLACK);
+        C3D_FrameEnd(0);
     }
+
+    C2D_Fini();
+	C3D_Fini();
+
     return EXIT_SUCCESS;
 }
 
@@ -209,6 +248,15 @@ void scrollCards(uint8_t* element, uint8_t* rank)
             *element = CARD_ELEMENT_SNOW;
         }
     }
+}
+
+
+void refreshWait(void)
+{
+    while(!checkDelayTimer(ticks_refresh_ref, tick_refresh_delay)) {
+        continue;
+    }
+    ticks_refresh_ref = svcGetSystemTick();
 }
 
 

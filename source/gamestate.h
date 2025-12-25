@@ -9,7 +9,9 @@ Author:   AllAcacia
 #include <limits.h>
 #include <stdlib.h>
 #include "controls.h"
+#include "dynamics.h"
 #include "sprites.h"
+#include "citro2d.h"
 
 
 #define REFRESH_RATE 20 // ms
@@ -26,6 +28,10 @@ Author:   AllAcacia
 #define CARD_ELEMENT_SNOW 2
 #define CARD_RANK_MIN 0
 #define CARD_RANK_MAX 12
+
+#define FIRE_CARDS_NUM 72
+#define WATER_CARDS_NUM 72
+#define SNOW_CARDS_NUM 72
 
 
 typedef enum {
@@ -48,6 +54,8 @@ int launchCJQHydro(void);
 int launchCJQCryo(void);
 
 void navigateMenu(void);
+
+void refreshWait(void);
 
 void scrollCards(uint8_t* element, uint8_t* rank);
 

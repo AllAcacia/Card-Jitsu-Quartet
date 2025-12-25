@@ -65,12 +65,15 @@ int launchCJQProto(void)
     SecondOrderDTS touchLocX_DTS;
     SecondOrderDTS touchLocY_DTS;
     float dyn_fn = 1.0f;
-    float dyn_xi = 0.95f;
+    float dyn_xi = 0.75f;
     float dyn_dt = ((float)REFRESH_RATE)/1000.0f;
     dynamicSS_init(&touchLocX_DTS, dyn_fn, dyn_xi, dyn_dt);
     dynamicSS_setstate(&touchLocX_DTS, BOTTOM_SCREEN_WIDTH/2, 0.0f);
     dynamicSS_init(&touchLocY_DTS, dyn_fn, dyn_xi, dyn_dt);
     dynamicSS_setstate(&touchLocY_DTS, BOTTOM_SCREEN_HEIGHT/2, 0.0f);
+
+    float flt_to_tpadx = BOTTOM_SCREEN_WIDTH/8.08036f;
+    float flt_to_tpady = BOTTOM_SCREEN_HEIGHT/6.05395f;
 
     // Set reference time for refresh
     ticks_refresh_ref = svcGetSystemTick();
@@ -88,8 +91,8 @@ int launchCJQProto(void)
         card_curr = &(cards_all[element_i][rank_i]);
         
         if(input.kHeld & KEY_TOUCH) { // If touch-screen pressed, iterate DTS
-            dynamicSS_iterate(&touchLocX_DTS, (float)(input.vtpad.px)*BOTTOM_SCREEN_WIDTH/8.506f);
-            dynamicSS_iterate(&touchLocY_DTS, (float)(input.vtpad.py)*BOTTOM_SCREEN_HEIGHT/6.373f);
+            dynamicSS_iterate(&touchLocX_DTS, ((float)input.vtpad.px)*flt_to_tpadx);
+            dynamicSS_iterate(&touchLocY_DTS, ((float)input.vtpad.py)*flt_to_tpady);
         } else {
             dynamicSS_setstate(&touchLocX_DTS, card_curr->params.pos.x, 0.0f);
             dynamicSS_setstate(&touchLocY_DTS, card_curr->params.pos.y, 0.0f);

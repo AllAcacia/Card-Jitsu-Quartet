@@ -7,15 +7,15 @@ Author:   AllAcacia
 #include "mat2d.h"
 
 
-Matrix2D_Float* mat2Dfloat_init(const size_t m, const size_t n)
+Matrix2D_Float mat2Dfloat_init(const size_t m, const size_t n)
 {
     // allocates memory to new matrix object
-    Matrix2D_Float* mat = malloc(sizeof(Matrix2D_Float));
-    mat->mat_float = calloc(n*m, sizeof(float));
-    mat->m = m;
-    mat->n = n;
-    if(mat->mat_float != NULL) {
-        mat2Dfloat_fillzeros(mat);
+    Matrix2D_Float mat;
+    mat.mat_float = calloc(n*m, sizeof(float));
+    mat.m = m;
+    mat.n = n;
+    if(mat.mat_float != NULL) {
+        mat2Dfloat_fillzeros(&mat);
     }
     return mat;
 }
@@ -36,7 +36,6 @@ void mat2Dfloat_del(Matrix2D_Float* ptr)
 {
     // frees memory of matrix object
     free(ptr->mat_float);
-    free(ptr);
 }
 
 

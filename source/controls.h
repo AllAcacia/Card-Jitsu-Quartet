@@ -18,7 +18,6 @@ typedef struct {
     accelVector vaccl;        // Accelerometer vector
     angularRate vgyro;        // Gyroscope vector
     touchPosition vtpad;      // Touchpad vector
-    touchPosition vtpad_prev; // Touchpad vector (from previous iteration)
 } InputState;
 
 

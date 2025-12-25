@@ -17,7 +17,6 @@ void hidCaptureAllInputs(void)
 	input.kUp = hidKeysUp();
 	input.kDown = hidKeysDown();
 	input.kHeld = hidKeysHeld();
-    input.vtpad_prev = input.vtpad;
 	hidTouchRead(&(input.vtpad));
 	hidCircleRead(&(input.vcpad));
 	hidAccelRead(&(input.vaccl));

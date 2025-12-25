@@ -70,3 +70,5 @@ void getBinaryRep(int num, int len, char* out);
 void print_control_data(u64 time_s, touchPosition* tpad, circlePosition* cpad, accelVector* accl, angularRate* gyro, u32* kheld);
 
 void print_menu(void);
+
+void print_tpad_matrix_data(Matrix2D_Float* A1, Matrix2D_Float* x1, Matrix2D_Float* u1, Matrix2D_Float* A2, Matrix2D_Float* x2, Matrix2D_Float* u2);

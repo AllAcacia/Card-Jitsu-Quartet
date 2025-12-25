@@ -64,10 +64,13 @@ int launchCJQProto(void)
 
     SecondOrderDTS touchLocX_DTS;
     SecondOrderDTS touchLocY_DTS;
-    dynamicSS_init(&touchLocX_DTS, 1.0f, 0.95f, ((float)REFRESH_RATE)/1000.0f);
+    float dyn_fn = 1.0f;
+    float dyn_xi = 0.95f;
+    float dyn_dt = ((float)REFRESH_RATE)/1000.0f;
+    dynamicSS_init(&touchLocX_DTS, dyn_fn, dyn_xi, dyn_dt);
     dynamicSS_setstate(&touchLocX_DTS, BOTTOM_SCREEN_WIDTH/2, 0.0f);
-    dynamicSS_init(&touchLocY_DTS, 1.0f, 0.95f, ((float)REFRESH_RATE)/1000.0f);
-    dynamicSS_setstate(&touchLocX_DTS, BOTTOM_SCREEN_HEIGHT/2, 0.0f);
+    dynamicSS_init(&touchLocY_DTS, dyn_fn, dyn_xi, dyn_dt);
+    dynamicSS_setstate(&touchLocY_DTS, BOTTOM_SCREEN_HEIGHT/2, 0.0f);
 
     // Set reference time for refresh
     ticks_refresh_ref = svcGetSystemTick();
@@ -85,12 +88,13 @@ int launchCJQProto(void)
         card_curr = &(cards_all[element_i][rank_i]);
         
         if(input.kHeld & KEY_TOUCH) { // If touch-screen pressed, iterate DTS
-            dynamicSS_iterate(&touchLocX_DTS, (float)input.vtpad.px);
-            dynamicSS_iterate(&touchLocY_DTS, (float)input.vtpad.py);
+            dynamicSS_iterate(&touchLocX_DTS, (float)(input.vtpad.px)*BOTTOM_SCREEN_WIDTH/8.506f);
+            dynamicSS_iterate(&touchLocY_DTS, (float)(input.vtpad.py)*BOTTOM_SCREEN_HEIGHT/6.373f);
         } else {
-            dynamicSS_iterate(&touchLocX_DTS, mat2Dfloat_return(&touchLocX_DTS.x1, 0, 0));
-            dynamicSS_iterate(&touchLocY_DTS, mat2Dfloat_return(&touchLocY_DTS.x1, 0, 0));
-        } C2D_SpriteMove(card_curr, mat2Dfloat_return(&touchLocX_DTS.x1, 0, 0), mat2Dfloat_return(&touchLocY_DTS.x1, 0, 0));
+            dynamicSS_setstate(&touchLocX_DTS, card_curr->params.pos.x, 0.0f);
+            dynamicSS_setstate(&touchLocY_DTS, card_curr->params.pos.y, 0.0f);
+        } C2D_SpriteSetPos(card_curr, mat2Dfloat_return(&touchLocX_DTS.x1, 0, 0), mat2Dfloat_return(&touchLocY_DTS.x1, 0, 0));
+        print_tpad_matrix_data(&touchLocX_DTS.F, &touchLocX_DTS.x1, &touchLocX_DTS.u1, &touchLocY_DTS.F, &touchLocY_DTS.x1, &touchLocY_DTS.u1);
 
         // Render the scene
 		C3D_FrameBegin(C3D_FRAME_SYNCDRAW);
@@ -373,4 +377,30 @@ void print_menu(void)
 	}
 
 	printf("\x1b[3;0HSELECT = Main Menu");
+}
+
+
+void print_tpad_matrix_data(Matrix2D_Float* A1, Matrix2D_Float* x1, Matrix2D_Float* u1, Matrix2D_Float* A2, Matrix2D_Float* x2, Matrix2D_Float* u2)
+{
+    // Prints touchpad matrix data
+
+    // A1
+    printf("\x1b[5;0H[[%+3.3f, %+3.3f]", mat2Dfloat_return(A1, 0, 0), mat2Dfloat_return(A1, 0, 1));
+    printf("\x1b[6;0H [%+3.3f, %+3.3f]]", mat2Dfloat_return(A1, 1, 0), mat2Dfloat_return(A1, 1, 1));
+    // x1
+    printf("\x1b[5;20H[[%+3.3f]", mat2Dfloat_return(x1, 0, 0));
+    printf("\x1b[6;20H [%+3.3f]]", mat2Dfloat_return(x1, 1, 0));
+    // u1
+    printf("\x1b[5;33H[[%+3.3f]", mat2Dfloat_return(u1, 0, 0));
+    printf("\x1b[6;33H [%+3.3f]]", mat2Dfloat_return(u1, 1, 0));
+
+    // A2
+    printf("\x1b[9;0H[[%+3.3f, %+3.3f]", mat2Dfloat_return(A2, 0, 0), mat2Dfloat_return(A2, 0, 1));
+    printf("\x1b[10;0H [%+3.3f, %+3.3f]]", mat2Dfloat_return(A2, 1, 0), mat2Dfloat_return(A2, 1, 1));
+    // x2
+    printf("\x1b[9;20H[[%+3.3f]", mat2Dfloat_return(x2, 0, 0));
+    printf("\x1b[10;20H [%+3.3f]]", mat2Dfloat_return(x2, 1, 0));
+    // u2
+    printf("\x1b[9;33H[[%+3.3f]", mat2Dfloat_return(u2, 0, 0));
+    printf("\x1b[10;33H [%+3.3f]]", mat2Dfloat_return(u2, 1, 0));
 }

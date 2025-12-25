@@ -8,6 +8,7 @@ Author:   AllAcacia
 
 #include <citro2d.h>
 #include <stdlib.h>
+#include <3ds.h>
 
 #define MAX_SPRITES 768
 #define TOP_SCREEN_WIDTH 400
@@ -19,15 +20,7 @@ Author:   AllAcacia
 #define C2D_WHITE C2D_Color32(255, 255, 255, 255)
 
 
-typedef struct
-{
-	C2D_Sprite spr;
-	float dx; // velocity x
-    float dy; // velocity y
-} Sprite;
-
-
-Sprite* initSpritesFromSpritesheet(C2D_SpriteSheet spriteSheet, size_t numImages, float piv_x, float piv_y, uint8_t loc_x, uint8_t loc_y);
+void loadSpritesFromSpritesheet(C2D_Sprite* ptr, C2D_SpriteSheet sheet, size_t numImages, float piv_x, float piv_y, uint16_t loc_x, uint16_t loc_y, float rot_d);
 
 
 #endif // SPRITES_H

@@ -1,0 +1,13 @@
+--atlas -f rgba -z auto
+ui/ButtonA_24.png
+ui/ButtonA_32.png
+ui/ButtonA_64.png
+ui/ButtonB_24.png
+ui/ButtonB_32.png
+ui/ButtonB_64.png
+ui/ButtonX_24.png
+ui/ButtonX_32.png
+ui/ButtonX_64.png
+ui/ButtonY_24.png
+ui/ButtonY_32.png
+ui/ButtonY_64.png

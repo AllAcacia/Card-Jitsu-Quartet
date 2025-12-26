@@ -15,6 +15,9 @@ u64 ticks_timer_ref;
 u64 ticks_refresh_ref;
 u64 time_s = 0;
 
+float flt_to_tpadx = BOTTOM_SCREEN_WIDTH/8.10569f;
+float flt_to_tpady = BOTTOM_SCREEN_HEIGHT/6.07928f;
+
 
 void screensInit(void)
 {
@@ -71,9 +74,6 @@ int launchCJQProto(void)
     dynamicSS_setstate(&touchLocX_DTS, BOTTOM_SCREEN_WIDTH/2, 0.0f);
     dynamicSS_init(&touchLocY_DTS, dyn_fn, dyn_xi, dyn_dt);
     dynamicSS_setstate(&touchLocY_DTS, BOTTOM_SCREEN_HEIGHT/2, 0.0f);
-
-    float flt_to_tpadx = BOTTOM_SCREEN_WIDTH/8.08036f;
-    float flt_to_tpady = BOTTOM_SCREEN_HEIGHT/6.05395f;
 
     // Set reference time for refresh
     ticks_refresh_ref = svcGetSystemTick();

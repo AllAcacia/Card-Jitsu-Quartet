@@ -7,8 +7,8 @@ Author:   AllAcacia
 
 
 CJQ_Gamestate gamestate;
-C3D_RenderTarget* top_screen;
-C3D_RenderTarget* bot_screen;
+C3D_RenderTarget* TOP_SCREEN;
+C3D_RenderTarget* BOT_SCREEN;
 
 u64 tick_refresh_delay;
 u64 ticks_timer_ref;
@@ -19,9 +19,9 @@ float flt_to_tpadx = BOTTOM_SCREEN_WIDTH/8.10569f;
 float flt_to_tpady = BOTTOM_SCREEN_HEIGHT/6.07928f;
 
 C2D_SpriteSheet menu_top_gfx_sheet;
-C2D_Sprite* menu_top_gfx;
+C2D_Sprite menu_top_gfx;
 C2D_SpriteSheet menu_bot_gfx_sheet;
-C2D_Sprite* menu_bot_gfx;
+C2D_Sprite menu_bot_gfx;
 
 
 bool DEBUG_MODE = false;
@@ -33,12 +33,13 @@ int main(int argc, char **argv)
 	romfsInit();
 	gfxInitDefault();
 	hidInit();
-	consoleInit(GFX_TOP, NULL);
+	// consoleInit(GFX_TOP, NULL);
 	
 	// Initialize C2D
     C3D_Init(C3D_DEFAULT_CMDBUF_SIZE);
 	C2D_Init(C2D_DEFAULT_MAX_OBJECTS);
 	C2D_Prepare();
+	
 	// Initialize screens
 	screensInit();
 	
@@ -50,9 +51,14 @@ int main(int argc, char **argv)
 	tick_refresh_delay = getTickDelay(REFRESH_RATE);
 
 	menu_top_gfx_sheet = C2D_SpriteSheetLoad("romfs:/gfx/ui_menu_top.t3x");
-	loadSpritesFromSpritesheet(menu_top_gfx, menu_top_gfx_sheet, 1, 0.5f, 0.5f, BOTTOM_SCREEN_WIDTH/2, BOTTOM_SCREEN_HEIGHT/2, 0.0f);
+	C2D_SpriteFromSheet(&menu_top_gfx, menu_top_gfx_sheet, 0);
+	C2D_SpriteSetCenter(&menu_top_gfx, 0.5f, 0.5f);
+	C2D_SpriteSetPos(&menu_top_gfx, TOP_SCREEN_WIDTH/2, TOP_SCREEN_HEIGHT/2);
 	menu_bot_gfx_sheet = C2D_SpriteSheetLoad("romfs:/gfx/ui_menu_bot.t3x");
-	loadSpritesFromSpritesheet(menu_bot_gfx, menu_bot_gfx_sheet, 1, 0.5f, 0.5f, BOTTOM_SCREEN_WIDTH/2, BOTTOM_SCREEN_HEIGHT/2, 0.0f);
+	C2D_SpriteFromSheet(&menu_bot_gfx, menu_bot_gfx_sheet, 0);
+	C2D_SpriteSetCenter(&menu_bot_gfx, 0.5f, 0.5f);
+	C2D_SpriteSetPos(&menu_bot_gfx, BOTTOM_SCREEN_WIDTH/2, BOTTOM_SCREEN_HEIGHT/2);
+	
 
 	// Main loop
 	while (aptMainLoop())
@@ -65,19 +71,13 @@ int main(int argc, char **argv)
 		} else {
 			navigateMenu();
 		}
-
-		// Flush and swap framebuffers
-		gfxFlushBuffers();
-		gfxSwapBuffers();
-
-		// Wait for VBlank
-		gspWaitForVBlank();
 	}
 
 	C2D_Fini();
 	C3D_Fini();
 	hidExit();
 	gfxExit();
+	romfsExit();
 	return 0;
 }
 
@@ -85,8 +85,8 @@ int main(int argc, char **argv)
 void screensInit(void)
 {
     // Create screens
-    top_screen = C2D_CreateScreenTarget(GFX_TOP, GFX_LEFT);
-	bot_screen = C2D_CreateScreenTarget(GFX_BOTTOM, GFX_LEFT);
+    TOP_SCREEN = C2D_CreateScreenTarget(GFX_TOP, GFX_LEFT);
+	BOT_SCREEN = C2D_CreateScreenTarget(GFX_BOTTOM, GFX_LEFT);
     tick_refresh_delay = getTickDelay(REFRESH_RATE);
 }
 
@@ -95,8 +95,6 @@ int launchCJQProto(void)
 {
     gamestate = PROTO;
 
-    // Clear Screen
-    consoleClear();
     print_menu();
 
     // Load Card Spritesheets
@@ -154,21 +152,14 @@ int launchCJQProto(void)
             dynamicSS_setstate(&touchLocX_DTS, card_curr->params.pos.x, 0.0f);
             dynamicSS_setstate(&touchLocY_DTS, card_curr->params.pos.y, 0.0f);
         } C2D_SpriteSetPos(card_curr, mat2Dfloat_return(&touchLocX_DTS.x1, 0, 0), mat2Dfloat_return(&touchLocY_DTS.x1, 0, 0));
-        print_tpad_matrix_data(&touchLocX_DTS.F, &touchLocX_DTS.x1, &touchLocX_DTS.u1, &touchLocY_DTS.F, &touchLocY_DTS.x1, &touchLocY_DTS.u1);
+        // print_tpad_matrix_data(&touchLocX_DTS.F, &touchLocX_DTS.x1, &touchLocX_DTS.u1, &touchLocY_DTS.F, &touchLocY_DTS.x1, &touchLocY_DTS.u1);
 
         // Render the scene
 		C3D_FrameBegin(C3D_FRAME_SYNCDRAW);
-        C2D_TargetClear(bot_screen, C2D_WHITE);
-        C2D_SceneBegin(bot_screen);
+        C2D_TargetClear(BOT_SCREEN, C2D_WHITE);
+        C2D_SceneBegin(BOT_SCREEN);
         C2D_DrawSprite(card_curr);
         C3D_FrameEnd(0);
-        
-		// // Flush and swap framebuffers
-		// gfxFlushBuffers();
-		// gfxSwapBuffers();
-
-		// // Wait for VBlank
-		// gspWaitForVBlank();
 
         refreshWait();
     }
@@ -200,7 +191,7 @@ int launchCJQPyro(void)
         }
 
         C3D_FrameBegin(C3D_FRAME_SYNCDRAW);
-        C2D_TargetClear(bot_screen, C2D_BLACK);
+        C2D_TargetClear(BOT_SCREEN, C2D_BLACK);
         C3D_FrameEnd(0);
     }
 
@@ -271,19 +262,29 @@ void navigateMenu(void)
 
 	// else
 	if (gamestate == MENU) {
-        if (input.kDown & KEY_SELECT) {
+        if (input.kDown & DEBUG_SELECT) {
             DEBUG_MODE = !DEBUG_MODE;
         }
         if (DEBUG_MODE && checkDelayTimer(ticks_refresh_ref, tick_refresh_delay)) {
+			C3D_FrameBegin(C3D_FRAME_SYNCDRAW);
+			C2D_TargetClear(TOP_SCREEN, C2D_BLACK);
+			C2D_TargetClear(BOT_SCREEN, C2D_BLACK);
 			print_control_data(time_s, &(input.vtpad), &(input.vcpad), &(input.vaccl), &(input.vgyro), &(input.kHeld));
+			C3D_FrameEnd(0);
+			
 			ticks_refresh_ref = svcGetSystemTick();
 		}
 		else if (!DEBUG_MODE && checkDelayTimer(ticks_refresh_ref, tick_refresh_delay)) {
 			C3D_FrameBegin(C3D_FRAME_SYNCDRAW);
-			C2D_SceneBegin(top_screen);
-			C2D_DrawSprite(menu_top_gfx);
-			C2D_SceneBegin(bot_screen);
-			C2D_DrawSprite(menu_bot_gfx);
+			
+			C2D_TargetClear(TOP_SCREEN, C2D_BLACK);
+			C2D_SceneBegin(TOP_SCREEN);
+			C2D_DrawSprite(&menu_top_gfx);
+			
+			C2D_TargetClear(BOT_SCREEN, C2D_BLACK);
+			C2D_SceneBegin(BOT_SCREEN);
+			C2D_DrawSprite(&menu_bot_gfx);
+			
 			C3D_FrameEnd(0);
 			ticks_refresh_ref = svcGetSystemTick();
         } 

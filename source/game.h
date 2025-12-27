@@ -18,7 +18,6 @@ Author:   AllAcacia
 #include "controls.h"
 #include "dynamics.h"
 #include "sprites.h"
-#include "citro2d.h"
 
 
 #define REFRESH_RATE 20 // ms
@@ -27,6 +26,7 @@ Author:   AllAcacia
 #define PYRO_SELECT KEY_B
 #define HYDRO_SELECT KEY_Y
 #define CRYO_SELECT KEY_X
+#define DEBUG_SELECT KEY_ZR
 
 // Relocate to card module!!!
 #define CARD_BASIC_SHEET_LEN 72

@@ -1,6 +1,6 @@
 ![CJQ Logo](https://github.com/AllAcacia/Card-Jitsu-Quartet/blob/main/gfx/promo/Logo-Title-Cropped-Reduced.png)
 ## About
-Master the three elements within Card-Jitsu!
+Master the three elements within Card-Jitsu! If you'd like to join the community Discord, the server link is here: https://discord.gg/2aw3GXCU8D.
 
 ## How to Compile
 Run "make" in directory to compile, and "make clean" to remove all compiled files.

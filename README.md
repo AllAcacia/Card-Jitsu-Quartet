@@ -9,9 +9,9 @@ Run "make" in directory to compile, and "make clean" to remove all compiled file
 Drag and drop "Card-Jitsu-Quartet.3dsx" into the root/3ds directory of your (modded with Luma3DS) 3DS console's SD card. Open the Homebrew Launcher on your 3DS, then find the title and press "A"!
 
 ## In-Game Notes
-There is very little if no gameplay implemented, as the bare basics are being implemented (this is my first time working with devkitPro). You will start at the main menu. There are options to open Card-Jitsu and its elemental variants, but only the base title has content being developed for at this moment.
+There is very little to no gameplay implemented at this stage, as the bare basics are being implemented (this is my first time working with devkitPro). You will start at the main menu; there are options to open Card-Jitsu and its elemental variants, but only the base title has content being developed for at this moment.
 
 ![Preview of the Main Menu of CJQ](https://github.com/AllAcacia/Card-Jitsu-Quartet/blob/main/menu_preview.png)
 
 # Disclaimer
-This project is not associated with Disney's original Club Penguin or Card-Jitsu copyrights. This project is non-commercial and is intended to improve my skills in embedded development and relive any nostalgia previous fans have had for the game.
+This project is not associated with Disney's original Club Penguin or Card-Jitsu copyrights, nor are any infringements intended. This project is non-commercial and is intended to improve my skills in embedded software development and relive any nostalgia fans have had for the original game.

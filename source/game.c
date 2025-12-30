@@ -10,9 +10,6 @@ CJQ_Gamestate gamestate;
 C3D_RenderTarget* TOP_SCREEN;
 C3D_RenderTarget* BOT_SCREEN;
 
-u64 tick_refresh_delay;
-u64 ticks_timer_ref;
-u64 ticks_refresh_ref;
 u64 time_s = 0;
 
 float flt_to_tpadx = BOTTOM_SCREEN_WIDTH/8.10569f;
@@ -23,6 +20,12 @@ C2D_Sprite menu_top_gfx;
 C2D_SpriteSheet menu_bot_gfx_sheet;
 C2D_Sprite menu_bot_gfx;
 
+u64 tick_prev;
+u64 tick_net;
+
+u64 SIMUL_TICKS;
+u64 REFRESH_TICKS;
+const uint8_t MAX_SIMUL_STEPS = 3; // prevents overloading the simulation loop
 
 bool DEBUG_MODE = false;
 
@@ -42,13 +45,14 @@ int main(int argc, char **argv)
 	
 	// Initialize screens
 	screensInit();
-	
-	ticks_timer_ref = svcGetSystemTick();
-	ticks_refresh_ref = svcGetSystemTick();
 	time_s = 0;
 	gamestate = MENU;
-
-	tick_refresh_delay = getTickDelay(REFRESH_RATE);
+	
+	// Set tick tracking states
+	tick_prev = svcGetSystemTick();
+	tick_net = 0;
+	SIMUL_TICKS = getTickDelay(1000/SIMUL_RATE_HZ);
+	REFRESH_TICKS = getTickDelay(1000/REFRESH_RATE_HZ);
 
 	menu_top_gfx_sheet = C2D_SpriteSheetLoad("romfs:/gfx/ui_menu_top.t3x");
 	C2D_SpriteFromSheet(&menu_top_gfx, menu_top_gfx_sheet, 0);
@@ -87,15 +91,12 @@ void screensInit(void)
     // Create screens
     TOP_SCREEN = C2D_CreateScreenTarget(GFX_TOP, GFX_LEFT);
 	BOT_SCREEN = C2D_CreateScreenTarget(GFX_BOTTOM, GFX_LEFT);
-    tick_refresh_delay = getTickDelay(REFRESH_RATE);
 }
 
 
 int launchCJQProto(void)
 {
     gamestate = PROTO;
-
-    print_menu();
 
     // Load Card Spritesheets
     C2D_SpriteSheet cards_fire_sheet = C2D_SpriteSheetLoad("romfs:/gfx/cards_basic_f.t3x");
@@ -124,15 +125,13 @@ int launchCJQProto(void)
     SecondOrderDTS touchLocY_DTS;
     float dyn_fn = 1.0f;
     float dyn_xi = 0.75f;
-    float dyn_dt = ((float)REFRESH_RATE)/1000.0f;
+    float dyn_dt = 1.0f/((float)SIMUL_RATE_HZ);
     dynamicSS_init(&touchLocX_DTS, dyn_fn, dyn_xi, dyn_dt);
     dynamicSS_setstate(&touchLocX_DTS, BOTTOM_SCREEN_WIDTH/2, 0.0f);
     dynamicSS_init(&touchLocY_DTS, dyn_fn, dyn_xi, dyn_dt);
     dynamicSS_setstate(&touchLocY_DTS, BOTTOM_SCREEN_HEIGHT/2, 0.0f);
 
-    // Set reference time for refresh
-    ticks_refresh_ref = svcGetSystemTick();
-    while (gamestate == PROTO) {
+    while (gamestate == PROTO && aptMainLoop()) {
         // read inputs
         hidCaptureAllInputs();
         gameTimer();
@@ -140,28 +139,42 @@ int launchCJQProto(void)
         if (input.kDown & KEY_SELECT) {
             gamestate = MENU;
         }
-        
-        // run game
-        scrollCards(&element_i, &rank_i);
-        card_curr = &(cards_all[element_i][rank_i]);
-        
-        if(input.kHeld & KEY_TOUCH) { // If touch-screen pressed, iterate DTS
-            dynamicSS_iterate(&touchLocX_DTS, ((float)input.vtpad.px)*flt_to_tpadx);
-            dynamicSS_iterate(&touchLocY_DTS, ((float)input.vtpad.py)*flt_to_tpady);
-        } else {
-            dynamicSS_setstate(&touchLocX_DTS, card_curr->params.pos.x, 0.0f);
-            dynamicSS_setstate(&touchLocY_DTS, card_curr->params.pos.y, 0.0f);
-        } C2D_SpriteSetPos(card_curr, mat2Dfloat_return(&touchLocX_DTS.x1, 0, 0), mat2Dfloat_return(&touchLocY_DTS.x1, 0, 0));
-        // print_tpad_matrix_data(&touchLocX_DTS.F, &touchLocX_DTS.x1, &touchLocX_DTS.u1, &touchLocY_DTS.F, &touchLocY_DTS.x1, &touchLocY_DTS.u1);
 
-        // Render the scene
+		// Update tick tracking
+		u64 tick_curr = svcGetSystemTick();
+		u64 tick_frame;
+		if (tick_curr >= tick_prev) {
+			tick_frame = tick_curr - tick_prev;
+		} else {
+			tick_frame = tick_curr + (ULLONG_MAX - tick_prev);
+		}
+		tick_prev = tick_curr;
+		tick_net += tick_frame;
+        
+        // Run game
+		scrollCards(&element_i, &rank_i);
+		card_curr = &(cards_all[element_i][rank_i]);
+		
+		uint8_t simul_steps = 0;
+		while (tick_net >= SIMUL_TICKS && simul_steps < MAX_SIMUL_STEPS) { // For time-sensitive actions
+			if(input.kHeld & KEY_TOUCH) { // If touch-screen pressed, iterate DTS (at a preset constant rate)
+				dynamicSS_iterate(&touchLocX_DTS, ((float)input.vtpad.px)*flt_to_tpadx);
+				dynamicSS_iterate(&touchLocY_DTS, ((float)input.vtpad.py)*flt_to_tpady);
+			} else {
+				dynamicSS_setstate(&touchLocX_DTS, card_curr->params.pos.x, 0.0f);
+				dynamicSS_setstate(&touchLocY_DTS, card_curr->params.pos.y, 0.0f);
+			}
+			tick_net -= SIMUL_TICKS;
+			simul_steps += 1;
+		}
+		C2D_SpriteSetPos(card_curr, mat2Dfloat_return(&touchLocX_DTS.x1, 0, 0), mat2Dfloat_return(&touchLocY_DTS.x1, 0, 0));
+		
+		// Render the scene
 		C3D_FrameBegin(C3D_FRAME_SYNCDRAW);
-        C2D_TargetClear(BOT_SCREEN, C2D_WHITE);
-        C2D_SceneBegin(BOT_SCREEN);
-        C2D_DrawSprite(card_curr);
-        C3D_FrameEnd(0);
-
-        refreshWait();
+		C2D_TargetClear(BOT_SCREEN, C2D_WHITE);
+		C2D_SceneBegin(BOT_SCREEN);
+		C2D_DrawSprite(card_curr);
+		C3D_FrameEnd(0);
     }
 
     C2D_SpriteSheetFree(cards_fire_sheet);
@@ -176,11 +189,7 @@ int launchCJQPyro(void)
 {
     gamestate = PYRO;
 
-    // Clear Screen
-    consoleClear();
-    print_menu();
-
-    while (gamestate == PYRO) {
+    while (gamestate == PYRO && aptMainLoop()) {
         // read inputs
         hidCaptureAllInputs();
         gameTimer();
@@ -190,9 +199,11 @@ int launchCJQPyro(void)
             gamestate = MENU;
         }
 
-        C3D_FrameBegin(C3D_FRAME_SYNCDRAW);
-        C2D_TargetClear(BOT_SCREEN, C2D_BLACK);
-        C3D_FrameEnd(0);
+        // Render the scene
+		C3D_FrameBegin(C3D_FRAME_SYNCDRAW);
+		C2D_TargetClear(BOT_SCREEN, C2D_BLACK);
+		C2D_SceneBegin(BOT_SCREEN);
+		C3D_FrameEnd(0);
     }
 
     return EXIT_SUCCESS;
@@ -203,12 +214,7 @@ int launchCJQHydro(void)
 {
     gamestate = HYDRO;
 
-    consoleClear();
-    print_menu();
-
-    // load
-
-    while (gamestate == HYDRO) {
+    while (gamestate == HYDRO && aptMainLoop()) {
         // read inputs
         hidCaptureAllInputs();
         gameTimer();
@@ -217,6 +223,12 @@ int launchCJQHydro(void)
         if (input.kDown & KEY_SELECT) {
             gamestate = MENU;
         }
+
+		// Render the scene
+		C3D_FrameBegin(C3D_FRAME_SYNCDRAW);
+		C2D_TargetClear(BOT_SCREEN, C2D_BLACK);
+		C2D_SceneBegin(BOT_SCREEN);
+		C3D_FrameEnd(0);
     }
     return EXIT_SUCCESS;
 }
@@ -226,12 +238,7 @@ int launchCJQCryo(void)
 {
     gamestate = CRYO;
 
-    consoleClear();
-    print_menu();
-
-    // load
-
-    while (gamestate == CRYO) {
+    while (gamestate == CRYO && aptMainLoop()) {
         // read inputs
         hidCaptureAllInputs();
         gameTimer();
@@ -240,6 +247,12 @@ int launchCJQCryo(void)
         if (input.kDown & KEY_SELECT) {
             gamestate = MENU;
         }
+
+		// Render the scene
+		C3D_FrameBegin(C3D_FRAME_SYNCDRAW);
+		C2D_TargetClear(BOT_SCREEN, C2D_BLACK);
+		C2D_SceneBegin(BOT_SCREEN);
+		C3D_FrameEnd(0);
     }
     return EXIT_SUCCESS;
 }
@@ -262,19 +275,21 @@ void navigateMenu(void)
 
 	// else
 	if (gamestate == MENU) {
-        if (input.kDown & DEBUG_SELECT) {
-            DEBUG_MODE = !DEBUG_MODE;
-        }
-        if (DEBUG_MODE && checkDelayTimer(ticks_refresh_ref, tick_refresh_delay)) {
+        // if (input.kDown & DEBUG_SELECT) {
+        //     DEBUG_MODE = !DEBUG_MODE;
+        // }
+        if (DEBUG_MODE) {
 			C3D_FrameBegin(C3D_FRAME_SYNCDRAW);
+
 			C2D_TargetClear(TOP_SCREEN, C2D_BLACK);
 			C2D_TargetClear(BOT_SCREEN, C2D_BLACK);
 			print_control_data(time_s, &(input.vtpad), &(input.vcpad), &(input.vaccl), &(input.vgyro), &(input.kHeld));
+
 			C3D_FrameEnd(0);
 			
-			ticks_refresh_ref = svcGetSystemTick();
+			tick_prev = svcGetSystemTick();
 		}
-		else if (!DEBUG_MODE && checkDelayTimer(ticks_refresh_ref, tick_refresh_delay)) {
+		else if (!DEBUG_MODE) {
 			C3D_FrameBegin(C3D_FRAME_SYNCDRAW);
 			
 			C2D_TargetClear(TOP_SCREEN, C2D_BLACK);
@@ -286,7 +301,7 @@ void navigateMenu(void)
 			C2D_DrawSprite(&menu_bot_gfx);
 			
 			C3D_FrameEnd(0);
-			ticks_refresh_ref = svcGetSystemTick();
+			tick_prev = svcGetSystemTick();
         } 
 	}
 }
@@ -325,18 +340,18 @@ void scrollCards(uint8_t* element, uint8_t* rank)
 
 void refreshWait(void)
 {
-    while(!checkDelayTimer(ticks_refresh_ref, tick_refresh_delay)) {
+    while(!checkDelayTimer(tick_prev, REFRESH_TICKS)) {
         continue;
     }
-    ticks_refresh_ref = svcGetSystemTick();
+    tick_prev = svcGetSystemTick();
 }
 
 
 void gameTimer(void)
 {
-    if  (checkDelayTimer(ticks_timer_ref, getTickDelay(1000))) {
+    if  (checkDelayTimer(tick_prev, getTickDelay(1000))) {
         time_s += 1;
-        ticks_timer_ref = svcGetSystemTick();
+        tick_prev = svcGetSystemTick();
     }
 }
 

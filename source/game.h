@@ -20,7 +20,8 @@ Author:   AllAcacia
 #include "sprites.h"
 
 
-#define REFRESH_RATE 20 // ms
+#define REFRESH_RATE_HZ 60 // fps
+#define SIMUL_RATE_HZ 60 // fps
 #define MENU_SELECT KEY_SELECT
 #define PROTO_SELECT KEY_A
 #define PYRO_SELECT KEY_B

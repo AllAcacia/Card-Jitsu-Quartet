@@ -131,6 +131,8 @@ int launchCJQProto(void)
     dynamicSS_init(&touchLocY_DTS, dyn_fn, dyn_xi, dyn_dt);
     dynamicSS_setstate(&touchLocY_DTS, BOTTOM_SCREEN_HEIGHT/2, 0.0f);
 
+	tick_net = 0;
+
     while (gamestate == PROTO && aptMainLoop()) {
         // read inputs
         hidCaptureAllInputs();
@@ -189,6 +191,8 @@ int launchCJQPyro(void)
 {
     gamestate = PYRO;
 
+	tick_net = 0;
+
     while (gamestate == PYRO && aptMainLoop()) {
         // read inputs
         hidCaptureAllInputs();
@@ -214,6 +218,8 @@ int launchCJQHydro(void)
 {
     gamestate = HYDRO;
 
+	tick_net = 0;
+
     while (gamestate == HYDRO && aptMainLoop()) {
         // read inputs
         hidCaptureAllInputs();
@@ -238,6 +244,8 @@ int launchCJQCryo(void)
 {
     gamestate = CRYO;
 
+	tick_net = 0;
+
     while (gamestate == CRYO && aptMainLoop()) {
         // read inputs
         hidCaptureAllInputs();
@@ -258,6 +266,76 @@ int launchCJQCryo(void)
 }
 
 
+int launchStickBug(void)
+{
+	gamestate = EXTRA;
+
+	uint8_t stickbug_sprite_len = 27;
+	uint8_t index = 0;
+
+	C2D_SpriteSheet stickbug1_sheet = C2D_SpriteSheetLoad("romfs:/gfx/stickbug1.t3x");
+    C2D_Sprite stickbug1[12];
+    loadSpritesFromSpritesheet(stickbug1, stickbug1_sheet, C2D_SpriteSheetCount(stickbug1_sheet), 0.5f, 0.5f, BOTTOM_SCREEN_WIDTH/2, BOTTOM_SCREEN_HEIGHT/2, 0.0f);
+
+	C2D_SpriteSheet stickbug2_sheet = C2D_SpriteSheetLoad("romfs:/gfx/stickbug2.t3x");
+    C2D_Sprite stickbug2[12];
+    loadSpritesFromSpritesheet(stickbug2, stickbug2_sheet, C2D_SpriteSheetCount(stickbug2_sheet), 0.5f, 0.5f, BOTTOM_SCREEN_WIDTH/2, BOTTOM_SCREEN_HEIGHT/2, 0.0f);
+
+	C2D_SpriteSheet stickbug3_sheet = C2D_SpriteSheetLoad("romfs:/gfx/stickbug3.t3x");
+    C2D_Sprite stickbug3[3];
+    loadSpritesFromSpritesheet(stickbug3, stickbug3_sheet, C2D_SpriteSheetCount(stickbug3_sheet), 0.5f, 0.5f, BOTTOM_SCREEN_WIDTH/2, BOTTOM_SCREEN_HEIGHT/2, 0.0f);
+
+	C2D_Sprite stickbug_all[27];
+	memcpy(&stickbug_all[0], stickbug1, 12*sizeof(C2D_Sprite));
+	memcpy(&stickbug_all[12], stickbug2, 12*sizeof(C2D_Sprite));
+	memcpy(&stickbug_all[24], stickbug3, 3*sizeof(C2D_Sprite));
+
+	tick_prev = svcGetSystemTick(); // set reference for tick
+	u64 stickbug_ticks = getTickDelay(1000/30);
+	tick_net = 0;
+
+	while (gamestate == EXTRA && aptMainLoop()) {
+		// read inputs
+        hidCaptureAllInputs();
+        gameTimer();
+
+		if ((input.kDown & KEY_SELECT)) { // exit
+			gamestate = MENU;
+		}
+
+		// Update tick tracking
+		u64 tick_curr = svcGetSystemTick();
+		u64 tick_frame;
+		if (tick_curr >= tick_prev) {
+			tick_frame = tick_curr - tick_prev;
+		} else {
+			tick_frame = tick_curr + (ULLONG_MAX - tick_prev);
+		}
+		tick_prev = tick_curr;
+		tick_net += tick_frame;
+		
+		uint8_t simul_steps = 0;
+		while (tick_net >= stickbug_ticks && simul_steps < 1) { // For time-sensitive actions
+			if (index < stickbug_sprite_len - 1) {
+				index += 1;
+			} else {
+				index = 0;
+			}
+			tick_net -= stickbug_ticks;
+			simul_steps += 1;
+		}
+
+		// Render the scene
+		C3D_FrameBegin(C3D_FRAME_SYNCDRAW);
+		C2D_TargetClear(BOT_SCREEN, C2D_WHITE);
+		C2D_SceneBegin(BOT_SCREEN);
+		C2D_DrawSprite(&stickbug_all[index]);
+		C3D_FrameEnd(0);
+	}
+	return EXIT_SUCCESS;
+}
+
+
 void navigateMenu(void)
 {
     gameTimer();
@@ -266,11 +344,14 @@ void navigateMenu(void)
 	if ((gamestate != PROTO) && (input.kDown & PROTO_SELECT)) { // CJ base
         launchCJQProto();
 	} else if ((gamestate != PYRO) && (input.kDown & PYRO_SELECT)) { // CJ fire
-        launchCJQPyro();
+        // launchCJQPyro();
+		launchStickBug();
 	} else if ((gamestate != HYDRO) && (input.kDown & HYDRO_SELECT)) { // CJ water
-        launchCJQHydro();
+        // launchCJQHydro();
+		launchStickBug();
 	} else if ((gamestate != CRYO) && (input.kDown & CRYO_SELECT)) { // CJ snow
-        launchCJQCryo();
+        // launchCJQCryo();
+		launchStickBug();
 	}
 
 	// else
@@ -338,9 +419,9 @@ void scrollCards(uint8_t* element, uint8_t* rank)
 }
 
 
-void refreshWait(void)
+void refreshWait(size_t tick_delay)
 {
-    while(!checkDelayTimer(tick_prev, REFRESH_TICKS)) {
+    while(!checkDelayTimer(tick_prev, tick_delay)) {
         continue;
     }
     tick_prev = svcGetSystemTick();

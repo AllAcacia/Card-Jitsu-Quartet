@@ -47,7 +47,8 @@ typedef enum {
 	PROTO,  // CJ Base
 	PYRO,   // CJ Fire
 	HYDRO,  // CJ Water
-	CRYO    // CJ Snow
+	CRYO,   // CJ Snow
+    EXTRA   // Easter Egg
 } CJQ_Gamestate;
 
 
@@ -63,7 +64,7 @@ int launchCJQCryo(void);
 
 void navigateMenu(void);
 
-void refreshWait(void);
+void refreshWait(size_t tick_delay);
 
 void scrollCards(uint8_t* element, uint8_t* rank);
 

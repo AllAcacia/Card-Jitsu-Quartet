@@ -332,6 +332,11 @@ int launchStickBug(void)
 		C2D_DrawSprite(&stickbug_all[index]);
 		C3D_FrameEnd(0);
 	}
+
+	C2D_SpriteSheetFree(stickbug1_sheet);
+    C2D_SpriteSheetFree(stickbug2_sheet);
+    C2D_SpriteSheetFree(stickbug3_sheet);
+
 	return EXIT_SUCCESS;
 }
 

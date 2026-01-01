@@ -51,8 +51,8 @@ int main(int argc, char **argv)
 	// Set tick tracking states
 	tick_prev = svcGetSystemTick();
 	tick_net = 0;
-	SIMUL_TICKS = getTickDelay(1000/SIMUL_RATE_HZ);
-	REFRESH_TICKS = getTickDelay(1000/REFRESH_RATE_HZ);
+	SIMUL_TICKS = getTickDelay_hz(SIMUL_RATE_HZ);
+	REFRESH_TICKS = getTickDelay_hz(REFRESH_RATE_HZ);
 
 	menu_top_gfx_sheet = C2D_SpriteSheetLoad("romfs:/gfx/ui_menu_top.t3x");
 	C2D_SpriteFromSheet(&menu_top_gfx, menu_top_gfx_sheet, 0);
@@ -291,7 +291,7 @@ int launchStickBug(void)
 	memcpy(&stickbug_all[24], stickbug3, 3*sizeof(C2D_Sprite));
 
 	tick_prev = svcGetSystemTick(); // set reference for tick
-	u64 stickbug_ticks = getTickDelay(1000/30);
+	u64 stickbug_ticks = getTickDelay_hz(30);
 	tick_net = 0;
 
 	while (gamestate == EXTRA && aptMainLoop()) {
@@ -435,16 +435,23 @@ void refreshWait(size_t tick_delay)
 
 void gameTimer(void)
 {
-    if  (checkDelayTimer(tick_prev, getTickDelay(1000))) {
+    if  (checkDelayTimer(tick_prev, getTickDelay_ms(1000))) {
         time_s += 1;
         tick_prev = svcGetSystemTick();
     }
 }
 
 
-u64 getTickDelay(u64 delay_ms)
+u64 getTickDelay_ms(u64 delay_ms)
 {
 	u64 delay_ticks = (delay_ms * SYSCLOCK_ARM11) / 1000;
+	return delay_ticks;
+}
+
+
+u64 getTickDelay_hz(u64 delay_hz)
+{
+	u64 delay_ticks = SYSCLOCK_ARM11 / delay_hz;
 	return delay_ticks;
 }
 

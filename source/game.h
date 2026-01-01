@@ -70,7 +70,9 @@ void scrollCards(uint8_t* element, uint8_t* rank);
 
 void gameTimer(void);
 
-u64 getTickDelay(u64 delay_ms);
+u64 getTickDelay_ms(u64 delay_ms);
+
+u64 getTickDelay_hz(u64 delay_hz);
 
 bool checkDelayTimer(u64 tick_ref, u64 delay_ticks);
 
